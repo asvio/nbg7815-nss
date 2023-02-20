@@ -2,9 +2,9 @@
 
 NSS_TEMP=$(cat /sys/class/thermal/thermal_zone0/temp)
 CPU_TEMP=$(cat /sys/class/thermal/thermal_zone9/temp)
-WIFI0_TEMP=$(cat /sys/class/hwmon/hwmon1/temp1_input 2>/dev/null) || WIFI0_TEMP=0
-WIFI1_TEMP=$(cat /sys/class/hwmon/hwmon2/temp1_input 2>/dev/null) || WIFI1_TEMP=0
-WIFI2_TEMP=$(cat /sys/class/hwmon/hwmon3/temp1_input 2>/dev/null) || WIFI2_TEMP=0
+WIFI0_TEMP=$(cat /sys/class/hwmon/hwmon2/temp1_input 2>/dev/null) || WIFI0_TEMP=0
+WIFI1_TEMP=$(cat /sys/class/hwmon/hwmon3/temp1_input 2>/dev/null) || WIFI1_TEMP=0
+WIFI2_TEMP=$(cat /sys/class/hwmon/hwmon4/temp1_input 2>/dev/null) || WIFI2_TEMP=0
 
 NSS_LOW=75000
 NSS_HIGH=80000
