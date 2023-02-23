@@ -1,0 +1,55 @@
+# Use "make defconfig" to expand this to a full .config
+# Target device
+CONFIG_TARGET_ipq807x=y
+CONFIG_TARGET_ipq807x_generic=y
+CONFIG_TARGET_ipq807x_generic_DEVICE_zyxel_nbg7815=y
+
+# NSS firmware
+CONFIG_PACKAGE_nss-eip-firmware=y
+CONFIG_PACKAGE_nss-firmware-ipq8074=y
+
+# NSS Drivers
+CONFIG_PACKAGE_kmod-qca-mcs=y
+CONFIG_PACKAGE_kmod-qca-nss-cfi-cryptoapi=y
+CONFIG_PACKAGE_kmod-qca-nss-drv=y
+CONFIG_PACKAGE_kmod-qca-nss-drv-bridge-mgr=y
+CONFIG_PACKAGE_kmod-qca-nss-drv-dtlsmgr=y
+CONFIG_PACKAGE_kmod-qca-nss-drv-l2tpv2=y
+CONFIG_PACKAGE_kmod-qca-nss-drv-lag-mgr=y
+CONFIG_PACKAGE_kmod-qca-nss-drv-map-t=y
+CONFIG_PACKAGE_kmod-qca-nss-drv-match=y
+CONFIG_PACKAGE_kmod-qca-nss-drv-netlink=y
+CONFIG_PACKAGE_kmod-qca-nss-drv-pppoe=y
+CONFIG_PACKAGE_kmod-qca-nss-drv-pptp=y
+CONFIG_PACKAGE_kmod-qca-nss-drv-pvxlanmgr=y
+CONFIG_PACKAGE_kmod-qca-nss-drv-tlsmgr=y
+CONFIG_PACKAGE_kmod-qca-nss-drv-tunipip6=y
+CONFIG_PACKAGE_kmod-qca-nss-drv-tun6rd=y
+CONFIG_PACKAGE_kmod-qca-nss-drv-vlan-mgr=y
+CONFIG_PACKAGE_kmod-qca-nss-drv-vxlanmgr=y
+CONFIG_PACKAGE_kmod-qca-nss-ecm=y
+
+# OTHER NSS
+CONFIG_PACKAGE_nssinfo=y
+CONFIG_PACKAGE_kmod-nss-ifb=y
+CONFIG_PACKAGE_kmod-nat46=y
+
+## PACKAGE_kmod-qca-nss-drv configuration
+CONFIG_NSS_DRV_C2C_ENABLE=y
+CONFIG_NSS_DRV_GRE_ENABLE=y
+CONFIG_NSS_DRV_IPV4_REASM_ENABLE=y
+CONFIG_NSS_DRV_IPV6_REASM_ENABLE=y
+CONFIG_NSS_DRV_L2TP_ENABLE=y
+CONFIG_NSS_DRV_MAPT_ENABLE=y
+CONFIG_NSS_DRV_OAM_ENABLE=y
+CONFIG_NSS_DRV_QRFS_ENABLE=y
+CONFIG_NSS_DRV_RMNET_ENABLE=y
+
+##bluetooth
+CONFIG_PACKAGE_bluez-tools=y
+
+
+## Luci app
+CONFIG_PACKAGE_luci=y
+CONFIG_PACKAGE_luci-app-opkg=y
+
