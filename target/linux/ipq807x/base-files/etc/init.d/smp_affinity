@@ -18,6 +18,9 @@ enable_affinity_ipq807x(){
     set_affinity 'wbm2host-tx-completions-ring1' 2
     set_affinity 'wbm2host-tx-completions-ring2' 4
     set_affinity 'wbm2host-tx-completions-ring3' 8
+
+    # Enable threaded network backlog processing
+    echo 1 > /proc/sys/net/core/backlog_threaded
 }
 
 boot() {
