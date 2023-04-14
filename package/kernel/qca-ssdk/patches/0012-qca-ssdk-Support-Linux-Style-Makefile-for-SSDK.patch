@@ -55,24 +55,24 @@ Signed-off-by: crao <quic_crao@quicinc.com>
 +++ b/Makefile.modules
 @@ -0,0 +1,16 @@
 +####################################################################
-+# 			Add All Local Flags
++#                     Add All Local Flags
 +####################################################################
 +ccflags-y += $(LNX_LOCAL_CFLAGS) -Wno-error
 +
 +####################################################################
-+# 			Build Object List
++#                     Build Object List
 +####################################################################
 +SRC_LIST := $(shell cat $(PRJ_PATH)/src_list.dep)
 +OBJ_LIST := $(patsubst %.c,%.o,$(SRC_LIST))
 +
 +####################################################################
-+# 			Linux Kernel Module
++#                     Linux Kernel Module
 +####################################################################
 +obj-m :=  qca-ssdk.o
 +qca-ssdk-objs := $(OBJ_LIST)
 --- a/make/defs.mk
 +++ b/make/defs.mk
-@@ -7,6 +7,7 @@ ifeq (,$(findstring $(LIB), $(COMPONENTS
+@@ -7,6 +7,7 @@ ifeq (,$(findstring $(LIB), $(COMPONENTS)))
  endif
  
  SRC_FILE=$(addprefix $(PRJ_PATH)/$(LOC_DIR)/, $(SRC_LIST))
@@ -82,7 +82,7 @@ Signed-off-by: crao <quic_crao@quicinc.com>
  OBJ_FILE=$(addprefix $(DST_DIR)/, $(OBJ_LIST))
 --- a/make/linux_opt.mk
 +++ b/make/linux_opt.mk
-@@ -295,7 +295,7 @@ ifeq (TRUE, $(DEBUG_ON))
+@@ -299,7 +299,7 @@ ifeq (TRUE, $(DEBUG_ON))
    MODULE_CFLAG += -g
  endif
  
@@ -91,7 +91,7 @@ Signed-off-by: crao <quic_crao@quicinc.com>
  
  MODULE_INC += -I$(PRJ_PATH)/include \
                     -I$(PRJ_PATH)/include/common \
-@@ -450,7 +450,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
+@@ -454,7 +454,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
  		MODULE_CFLAG += -DKVER34
  		MODULE_CFLAG += -DKVER32
  	    MODULE_CFLAG += -DLNX26_22
@@ -100,7 +100,7 @@ Signed-off-by: crao <quic_crao@quicinc.com>
                    -I$(TOOL_PATH)/../lib/gcc/$(TARGET_NAME)/$(GCC_VERSION)/include/ \
  	          -I$(SYS_PATH)/include \
                -I$(SYS_PATH)/source/include \
-@@ -473,7 +473,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
+@@ -477,7 +477,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
                  MODULE_CFLAG += -DKVER32
              MODULE_CFLAG += -DLNX26_22
  	    ifeq ($(ARCH), arm64)
@@ -109,7 +109,7 @@ Signed-off-by: crao <quic_crao@quicinc.com>
                    -I$(TOOL_PATH)/../lib/gcc/$(TARGET_NAME)/$(GCC_VERSION)/include/ \
                    -I$(SYS_PATH)/include \
                -I$(SYS_PATH)/source \
-@@ -492,13 +492,13 @@ ifeq (KSLIB, $(MODULE_TYPE))
+@@ -496,13 +496,13 @@ ifeq (KSLIB, $(MODULE_TYPE))
                -I$(SYS_PATH)/source/include/uapi
  
  	      ifneq ($(wildcard $(SYS_PATH)/include/linux/kconfig.h),)
@@ -126,7 +126,7 @@ Signed-off-by: crao <quic_crao@quicinc.com>
                -I$(TOOL_PATH)/../lib/gcc/$(TARGET_NAME)/$(GCC_VERSION)/include/ \
  	      -I$(TOOL_PATH)/../lib/gcc/$(TARGET_NAME)/7.5.0/include/ \
                -I$(TOOL_PATH)/../../lib/armv7a-vfp-neon-rdk-linux-gnueabi/gcc/arm-rdk-linux-gnueabi/4.8.4/include/ \
-@@ -522,13 +522,13 @@ ifeq (KSLIB, $(MODULE_TYPE))
+@@ -526,13 +526,13 @@ ifeq (KSLIB, $(MODULE_TYPE))
                -I$(TOOL_PATH)/../../lib/arm-rdk-linux-gnueabi/gcc/arm-rdk-linux-gnueabi/9.3.0/include/
  
  	      ifneq ($(wildcard $(SYS_PATH)/include/linux/kconfig.h),)
@@ -143,7 +143,7 @@ Signed-off-by: crao <quic_crao@quicinc.com>
                -I$(TOOL_PATH)/../lib/gcc/$(TARGET_NAME)/$(GCC_VERSION)/include/ \
                -I$(SYS_PATH)/include \
                -I$(SYS_PATH)/source \
-@@ -564,7 +564,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
+@@ -568,7 +568,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
              MODULE_CFLAG += -DLNX26_22
  	    ifeq ($(ARCH), arm64)
  	    KCONF_FILE = $(SYS_PATH)/source/include/linux/kconfig.h
@@ -152,7 +152,7 @@ Signed-off-by: crao <quic_crao@quicinc.com>
                    -I$(TOOL_PATH)/../lib/gcc/$(TARGET_NAME)/$(GCC_VERSION)/include/ \
                    -I$(SYS_PATH)/include \
                -I$(SYS_PATH)/source/include \
-@@ -581,7 +581,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
+@@ -585,7 +585,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
                -I$(SYS_PATH)/source/arch/arm64/include/asm/mach \
  	      -include $(KCONF_FILE)
  	    else ifeq ($(ARCH), arm)
@@ -161,7 +161,7 @@ Signed-off-by: crao <quic_crao@quicinc.com>
                -I$(TOOL_PATH)/../lib/gcc/$(TARGET_NAME)/$(GCC_VERSION)/include/ \
                -I$(TOOL_PATH)/../../lib/armv7a-vfp-neon-rdk-linux-gnueabi/gcc/arm-rdk-linux-gnueabi/4.8.4/include/ \
                -I$(SYS_PATH)/include \
-@@ -604,7 +604,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
+@@ -608,7 +608,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
  		MODULE_CFLAG += -DKVER34
  		MODULE_CFLAG += -DKVER32
  	    MODULE_CFLAG += -DLNX26_22
@@ -170,7 +170,7 @@ Signed-off-by: crao <quic_crao@quicinc.com>
                    -I$(TOOL_PATH)/../lib/gcc/$(TARGET_NAME)/$(GCC_VERSION)/include/ \
  		  -I$(TOOL_PATH)/../../lib/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/5.3.0/include/ \
  		  -I$(TOOL_PATH)/../../lib/armv7a-vfp-neon-rdk-linux-gnueabi/gcc/arm-rdk-linux-gnueabi/4.8.4/include/ \
-@@ -627,10 +627,10 @@ ifeq (KSLIB, $(MODULE_TYPE))
+@@ -631,10 +631,10 @@ ifeq (KSLIB, $(MODULE_TYPE))
                -I$(EXT_PATH) \
                -I$(SYS_PATH)/source/arch/arm/include/asm/mach
  	ifneq ($(wildcard $(SYS_PATH)/include/linux/kconfig.h),)
@@ -183,7 +183,7 @@ Signed-off-by: crao <quic_crao@quicinc.com>
  			-include $(SYS_PATH)/source/include/linux/kconfig.h
  	endif
  
-@@ -641,7 +641,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
+@@ -645,7 +645,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
  		MODULE_CFLAG += -DKVER32
  	    MODULE_CFLAG += -DLNX26_22
  	    MODULE_CFLAG += -Werror
@@ -192,7 +192,7 @@ Signed-off-by: crao <quic_crao@quicinc.com>
  	          -I$(SYS_PATH)/include \
                -I$(SYS_PATH)/source/include \
                -I$(SYS_PATH)/source/arch/arm/mach-msm/include \
-@@ -657,7 +657,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
+@@ -661,7 +661,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
  	MODULE_CFLAG += -DKVER32
  	MODULE_CFLAG += -DLNX26_22
  	ifeq (mips, $(CPU))
@@ -201,7 +201,7 @@ Signed-off-by: crao <quic_crao@quicinc.com>
              -I$(SYS_PATH)/include \
              -I$(SYS_PATH)/arch/mips/include \
  	    -I$(SYS_PATH)/arch/mips/include/asm/mach-ar7240 \
-@@ -678,7 +678,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
+@@ -682,7 +682,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
                       -O2 -fno-pic -pipe -mabi=32 -march=mips32r2 -DMODULE -mlong-calls -DEXPORT_SYMTAB
            endif
      else
@@ -210,7 +210,7 @@ Signed-off-by: crao <quic_crao@quicinc.com>
                -I$(SYS_PATH)/include \
                -I$(SYS_PATH)/arch/arm/include \
                -I$(SYS_PATH)/arch/arm/include/asm \
-@@ -695,7 +695,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
+@@ -699,7 +699,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
          MODULE_CFLAG += -DKVER26
          MODULE_CFLAG += -DLNX26_22
          ifeq (mips, $(CPU))
@@ -219,7 +219,7 @@ Signed-off-by: crao <quic_crao@quicinc.com>
              -I$(SYS_PATH)/include \
              -I$(SYS_PATH)/arch/mips/include \
              -I$(SYS_PATH)/arch/mips/include/asm/mach-ar7240 \
-@@ -708,7 +708,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
+@@ -712,7 +712,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
                       -O2 -fno-pic -pipe -mabi=32 -march=mips32r2 -DMODULE -mlong-calls -DEXPORT_SYMTAB
            endif
          else
@@ -228,7 +228,7 @@ Signed-off-by: crao <quic_crao@quicinc.com>
                -I$(SYS_PATH)/include \
                -I$(SYS_PATH)/arch/arm/include \
                -I$(SYS_PATH)/arch/arm/include/asm \
-@@ -721,8 +721,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
+@@ -725,8 +725,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
  
    endif
  
@@ -238,8 +238,8 @@ Signed-off-by: crao <quic_crao@quicinc.com>
  
  endif
  
-@@ -748,4 +747,15 @@ ifneq (TRUE, $(KERNEL_MODE))
-   endif
+@@ -758,4 +757,15 @@ else
+ 	MODULE_CFLAG +=  -mlittle-endian
  endif
  
 -LOCAL_CFLAGS += $(MODULE_INC) $(MODULE_CFLAG) $(EXTRA_CFLAGS)

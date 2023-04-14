@@ -36,7 +36,7 @@ Signed-off-by: Robert Marko <robimarko@gmail.com>
  endif
 --- a/make/linux_opt.mk
 +++ b/make/linux_opt.mk
-@@ -437,7 +437,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
+@@ -441,7 +441,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
        KASAN_SHADOW_SCALE_SHIFT := 3
    endif
  
@@ -45,7 +45,7 @@ Signed-off-by: Robert Marko <robimarko@gmail.com>
        ifeq ($(ARCH), arm64)
            KASAN_OPTION += -DKASAN_SHADOW_SCALE_SHIFT=$(KASAN_SHADOW_SCALE_SHIFT)
         endif
-@@ -468,7 +468,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
+@@ -472,7 +472,7 @@ ifeq (KSLIB, $(MODULE_TYPE))
  
    endif
  
