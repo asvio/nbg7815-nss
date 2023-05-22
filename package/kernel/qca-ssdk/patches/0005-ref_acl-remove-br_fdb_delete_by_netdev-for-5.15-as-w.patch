@@ -1,0 +1,24 @@
+From bdbc9318dcf154196e7e81f0c95ca1621851ae46 Mon Sep 17 00:00:00 2001
+From: Robert Marko <robimarko@gmail.com>
+Date: Mon, 22 May 2023 13:37:58 +0200
+Subject: [PATCH 5/5] ref_acl: remove br_fdb_delete_by_netdev for 5.15 as well
+
+br_fdb_delete_by_netdev is a QCA-ism, so lets remove it for 5.15 as well
+since QCA already removed it for 6.1.
+
+Signed-off-by: Robert Marko <robimarko@gmail.com>
+---
+ src/ref/ref_acl.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/src/ref/ref_acl.c
++++ b/src/ref/ref_acl.c
+@@ -229,7 +229,7 @@ _ref_acl_mac_entry_create_rule(a_uint32_
+ 		eth_dev = dev_get_by_name(&init_net, entry->ifname);
+ 		if (eth_dev)
+ 		{
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0))
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
+ 			// TODO: replace with corresponding ver
+ #else
+ 			br_fdb_delete_by_netdev(eth_dev, entry->src_mac.uc, 0);
