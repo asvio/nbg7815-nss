@@ -17,7 +17,7 @@ Signed-off-by: Robert Marko <robimarko@gmail.com>
 
 --- a/hal/dp_ops/edma_dp/edma_v1/edma_data_plane.c
 +++ b/hal/dp_ops/edma_dp/edma_v1/edma_data_plane.c
-@@ -838,8 +838,12 @@ static int edma_register_netdevice(struc
+@@ -838,8 +838,12 @@ static int edma_register_netdevice(struct net_device *netdev, uint32_t macid)
  	 * NAPI add
  	 */
  	if (!edma_hw.napi_added) {
@@ -33,7 +33,7 @@ Signed-off-by: Robert Marko <robimarko@gmail.com>
  		 */
 --- a/hal/dp_ops/edma_dp/edma_v2/edma_cfg_rx.c
 +++ b/hal/dp_ops/edma_dp/edma_v2/edma_cfg_rx.c
-@@ -1097,8 +1097,14 @@ void edma_cfg_rx_napi_add(struct edma_gb
+@@ -1387,8 +1387,14 @@ void edma_cfg_rx_napi_add(struct edma_gbl_ctx *egc, struct net_device *netdev)
  
  	for (i = 0; i < egc->num_rxdesc_rings; i++) {
  		struct edma_rxdesc_ring *rxdesc_ring = &egc->rxdesc_rings[i];
@@ -51,7 +51,7 @@ Signed-off-by: Robert Marko <robimarko@gmail.com>
  	edma_info("%s: Rx NAPI budget: %d\n", netdev->name, nss_dp_rx_napi_budget);
 --- a/hal/dp_ops/edma_dp/edma_v2/edma_cfg_tx.c
 +++ b/hal/dp_ops/edma_dp/edma_v2/edma_cfg_tx.c
-@@ -672,8 +672,13 @@ void edma_cfg_tx_napi_add(struct edma_gb
+@@ -714,8 +714,13 @@ void edma_cfg_tx_napi_add(struct edma_gbl_ctx *egc, struct net_device *netdev)
  	for (i = 0; i < egc->num_txcmpl_rings; i++) {
  		struct edma_txcmpl_ring *txcmpl_ring = &egc->txcmpl_rings[i];
  
@@ -68,7 +68,7 @@ Signed-off-by: Robert Marko <robimarko@gmail.com>
  	edma_info("Tx NAPI budget: %d\n", nss_dp_tx_napi_budget);
 --- a/hal/dp_ops/syn_gmac_dp/syn_dp.c
 +++ b/hal/dp_ops/syn_gmac_dp/syn_dp.c
-@@ -189,8 +189,13 @@ static int syn_dp_if_init(struct nss_dp_
+@@ -189,8 +189,13 @@ static int syn_dp_if_init(struct nss_dp_data_plane_ctx *dpc)
  	}
  
  	if (!dev_info->napi_added) {

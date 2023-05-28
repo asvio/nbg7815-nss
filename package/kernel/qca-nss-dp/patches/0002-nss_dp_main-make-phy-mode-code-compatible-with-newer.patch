@@ -23,7 +23,7 @@ Subject: [PATCH 2/3] nss_dp_main: make phy mode code compatible with newer
  #include <linux/version.h>
  
  #include "nss_dp_api_if.h"
-@@ -99,7 +99,7 @@ struct nss_dp_dev {
+@@ -122,7 +122,7 @@ struct nss_dp_dev {
  	/* Phy related stuff */
  	struct phy_device *phydev;	/* Phy device */
  	struct mii_bus *miibus;		/* MII bus */
@@ -34,7 +34,7 @@ Subject: [PATCH 2/3] nss_dp_main: make phy mode code compatible with newer
  	uint32_t forced_speed;		/* Forced speed? */
 --- a/nss_dp_main.c
 +++ b/nss_dp_main.c
-@@ -584,7 +584,11 @@ static int32_t nss_dp_of_get_pdata(struc
+@@ -620,7 +620,11 @@ static int32_t nss_dp_of_get_pdata(struct device_node *np,
  	hal_pdata->netdev = netdev;
  	hal_pdata->macid = dp_priv->macid;
  

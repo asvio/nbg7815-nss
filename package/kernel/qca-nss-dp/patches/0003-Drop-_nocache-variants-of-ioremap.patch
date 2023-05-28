@@ -26,7 +26,7 @@ Recent kernels removed them.
  		pr_warn("Unable to remap EDMA register memory.\n");
 --- a/hal/gmac_ops/qcom/qcom_if.c
 +++ b/hal/gmac_ops/qcom/qcom_if.c
-@@ -418,7 +418,7 @@ static void *qcom_init(struct nss_gmac_h
+@@ -389,7 +389,7 @@ static void *qcom_init(struct nss_gmac_hal_platform_data *gmacpdata)
  	qhd->nghd.mac_id = gmacpdata->macid;
  
  	/* Populate the mac base addresses */
@@ -37,7 +37,7 @@ Recent kernels removed them.
  		netdev_dbg(ndev, "ioremap fail.\n");
 --- a/hal/gmac_ops/syn/xgmac/syn_if.c
 +++ b/hal/gmac_ops/syn/xgmac/syn_if.c
-@@ -432,7 +432,7 @@ static void *syn_init(struct nss_gmac_ha
+@@ -395,7 +395,7 @@ static void *syn_init(struct nss_gmac_hal_platform_data *gmacpdata)
  
  	/* Populate the mac base addresses */
  	shd->nghd.mac_base =
