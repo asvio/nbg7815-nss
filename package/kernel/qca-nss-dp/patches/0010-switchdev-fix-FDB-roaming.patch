@@ -22,7 +22,7 @@ Signed-off-by: Robert Marko <robimarko@gmail.com>
 
 --- a/nss_dp_switchdev.c
 +++ b/nss_dp_switchdev.c
-@@ -24,6 +24,8 @@
+@@ -29,6 +29,8 @@
  #include "nss_dp_dev.h"
  #include "fal/fal_stp.h"
  #include "fal/fal_ctrlpkt.h"
@@ -31,7 +31,7 @@ Signed-off-by: Robert Marko <robimarko@gmail.com>
  
  #define NSS_DP_SWITCH_ID		0
  #define NSS_DP_SW_ETHTYPE_PID		0 /* PPE ethtype profile ID for slow protocols */
-@@ -348,10 +350,64 @@ static int nss_dp_switchdev_event(struct
+@@ -360,10 +362,64 @@ static int nss_dp_switchdev_event(struct
  	return NOTIFY_DONE;
  }
  
@@ -93,10 +93,10 @@ Signed-off-by: Robert Marko <robimarko@gmail.com>
 +	.notifier_call = nss_dp_fdb_switchdev_event,
 +};
 +
- static bool switch_init_done;
- 
+ #ifdef NSS_DP_SW_BR_OPS
  /*
-@@ -366,6 +422,11 @@ void nss_dp_switchdev_setup(struct net_d
+  * nss_dp_bridge_attr_set()
+@@ -537,6 +593,11 @@ void nss_dp_switchdev_setup(struct net_d
  		return;
  	}
  

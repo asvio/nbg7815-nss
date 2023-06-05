@@ -15,13 +15,13 @@ Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
 
 --- a/nss_dp_main.c
 +++ b/nss_dp_main.c
-@@ -900,6 +900,9 @@ static int32_t nss_dp_probe(struct platform_device *pdev)
+@@ -901,6 +901,9 @@ static int32_t nss_dp_probe(struct platf
  		goto phy_setup_fail;
  	}
  
 +	netdev_info(netdev, "Registered netdev %s(qcom-id:%d)\n",
 +		    netdev->name, port_id);
 +
-	dp_global_ctx.nss_dp[nss_dp_get_idx_from_macid(dp_priv->macid)] = dp_priv;
+ 	dp_global_ctx.nss_dp[nss_dp_get_idx_from_macid(dp_priv->macid)] = dp_priv;
  	dp_global_ctx.slowproto_acl_bm = 0;
  

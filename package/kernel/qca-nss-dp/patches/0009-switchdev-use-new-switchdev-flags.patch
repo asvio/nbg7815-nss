@@ -26,7 +26,7 @@ Signed-off-by: Robert Marko <robimarko@gmail.com>
  
  #include "nss_dp_api_if.h"
  #include "nss_dp_hal_if.h"
-@@ -149,7 +152,11 @@ struct nss_dp_dev {
+@@ -230,7 +233,11 @@ struct nss_dp_dev {
  	/* switchdev related attributes */
  #ifdef CONFIG_NET_SWITCHDEV
  	u8 stp_state;			/* STP state of this physical port */
@@ -40,7 +40,7 @@ Signed-off-by: Robert Marko <robimarko@gmail.com>
  	uint32_t rx_jumbo_mru;		/* Jumbo mru value for Rx processing */
 --- a/nss_dp_switchdev.c
 +++ b/nss_dp_switchdev.c
-@@ -296,7 +296,7 @@ static int nss_dp_port_attr_set(struct net_device *dev,
+@@ -229,7 +229,7 @@ static int nss_dp_attr_set(struct net_de
  	switch (attr->id) {
  	case SWITCHDEV_ATTR_ID_PORT_BRIDGE_FLAGS:
  		dp_priv->brport_flags = attr->u.brport_flags;
@@ -48,4 +48,4 @@ Signed-off-by: Robert Marko <robimarko@gmail.com>
 +		netdev_dbg(dev, "set brport_flags %lu\n", attr->u.brport_flags.val);
  		return 0;
  	case SWITCHDEV_ATTR_ID_PORT_STP_STATE:
- 		return nss_dp_stp_state_set(dp_priv, attr->u.stp_state);
+ 		/*

@@ -13,7 +13,7 @@ Signed-off-by: Robert Marko <robimarko@gmail.com>
 
 --- a/nss_dp_switchdev.c
 +++ b/nss_dp_switchdev.c
-@@ -279,13 +279,19 @@ void nss_dp_switchdev_setup(struct net_d
+@@ -289,13 +289,19 @@ void nss_dp_switchdev_setup(struct net_d
   *	Sets attributes
   */
  static int nss_dp_port_attr_set(struct net_device *dev,
@@ -33,9 +33,9 @@ Signed-off-by: Robert Marko <robimarko@gmail.com>
  
  	switch (attr->id) {
  	case SWITCHDEV_ATTR_ID_PORT_BRIDGE_FLAGS:
-@@ -309,8 +315,12 @@ static int nss_dp_switchdev_port_attr_se
- {
- 	int err;
+@@ -328,8 +334,12 @@ static int nss_dp_switchdev_port_attr_se
+ 		return NOTIFY_DONE;
+ 	}
  
 +#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 12, 0))
  	err = nss_dp_port_attr_set(netdev, port_attr_info->attr,
