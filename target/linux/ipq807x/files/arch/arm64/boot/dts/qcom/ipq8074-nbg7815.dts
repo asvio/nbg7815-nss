@@ -40,6 +40,129 @@
 			gpios = <&tlmm 54 GPIO_ACTIVE_LOW>;
 		};
 	};
+
+	fan0: gpio_fan {
+		compatible = "gpio-fan";
+		gpios = <&tlmm 21 GPIO_ACTIVE_HIGH>;
+		gpio-fan,speed-map = <0    0
+					4500 1>;
+		#cooling-cells = <2>;
+	};
+
+	thermal-zones {
+		aqr113c_thermal: aqr113c-thermal {
+			polling-delay-passive = <1000>;
+			polling-delay = <5000>;
+
+			thermal-sensors = <&aqr113c>;
+
+			trips {
+				aqr113c_active: aqr113c-active {
+					temperature = <80000>;
+					hysteresis = <5000>;
+					type = "active";
+				};
+
+				aqr113c-crit {
+					temperature = <105000>;
+					hysteresis = <1000>;
+					type = "critical";
+				};
+			};
+
+			cooling-maps {
+				map0 {
+					trip = <&aqr113c_active>;
+					cooling-device = <&fan0 1 1>;
+				};
+			};
+		};
+	};
+};
+
+&cpu0_thermal {
+	trips {
+		cpu0_active: cpu0-active {
+			temperature = <75000>;
+			hysteresis = <5000>;
+			type = "active";
+		};
+	};
+
+	cooling-maps {
+		map2 {
+			trip = <&cpu0_active>;
+			cooling-device = <&fan0 1 1>;
+		};
+	};
+};
+
+&cpu1_thermal {
+	trips {
+		cpu1_active: cpu1-active {
+			temperature = <75000>;
+			hysteresis = <5000>;
+			type = "active";
+		};
+	};
+
+	cooling-maps {
+		map2 {
+			trip = <&cpu1_active>;
+			cooling-device = <&fan0 1 1>;
+		};
+	};
+};
+
+&cpu2_thermal {
+	trips {
+		cpu2_active: cpu2-active {
+			temperature = <75000>;
+			hysteresis = <5000>;
+			type = "active";
+		};
+	};
+
+	cooling-maps {
+		map2 {
+			trip = <&cpu2_active>;
+			cooling-device = <&fan0 1 1>;
+		};
+	};
+};
+
+&cpu3_thermal {
+	trips {
+		cpu3_active: cpu3-active {
+			temperature = <75000>;
+			hysteresis = <5000>;
+			type = "active";
+		};
+	};
+
+	cooling-maps {
+		map2 {
+			trip = <&cpu3_active>;
+			cooling-device = <&fan0 1 1>;
+		};
+	};
+};
+
+&cluster_thermal {
+	trips {
+		cluster_active: cluster-active {
+			temperature = <75000>;
+			hysteresis = <5000>;
+			type = "active";
+		};
+	};
+
+	cooling-maps {
+		map2 {
+			trip = <&cluster_active>;
+			cooling-device = <&fan0 1 1>;
+		};
+	};
 };
 
 &tlmm {
@@ -59,7 +182,6 @@
 		};
 	};
 };
-
 
 &blsp1_uart3 {
 	status = "okay";
@@ -293,6 +415,7 @@
 		compatible = "ethernet-phy-ieee802.3-c45";
 		reg = <8>;
 		reset-gpios = <&tlmm 63 GPIO_ACTIVE_LOW>;
+		#thermal-sensor-cells = <0>;
 	};
 };
 
