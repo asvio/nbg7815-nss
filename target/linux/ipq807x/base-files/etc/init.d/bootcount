@@ -9,5 +9,10 @@ boot() {
 		# Unset changed flag after sysupgrade complete
 		fw_setenv changed
 	;;
+	zyxel,nbg7815)
+		# change the thermal governor policy for fan on/off
+		trip_type=$(grep -ilR active /sys/class/thermal/thermal*/trip* | cut -d '/' -f 5 | tr '\n' ' ')
+		for i in $trip_type; do echo bang_bang > /sys/class/thermal/$i/policy; done
+	;;
 	esac
 }
