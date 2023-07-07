@@ -72,6 +72,17 @@
 			};
 		};
 	};
+
+	gpio_export {
+		compatible = "gpio-export";
+		#size-cells = <0>;
+
+		fan {
+			gpio-export,name = "fan";
+			gpio-export,output = <0>;
+			gpios = <&tlmm 21 GPIO_ACTIVE_HIGH>;
+		};
+	};
 };
 
 &tlmm {
@@ -91,7 +102,6 @@
 		};
 	};
 };
-
 
 &blsp1_uart3 {
 	status = "okay";
@@ -117,7 +127,6 @@
 	status = "okay";
 };
 
-
 &blsp1_spi1 {
 	pinctrl-0 = <&spi_0_pins>;
 	pinctrl-names = "default";
@@ -137,7 +146,6 @@
 	partitions {
 		status = "disabled";
 	};
-
 
 	flash@0 {
 		#address-cells = <1>;
