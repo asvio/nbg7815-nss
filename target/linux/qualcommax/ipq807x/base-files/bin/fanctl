@@ -1,0 +1,40 @@
+#!/bin/sh
+# base on work of: Karol Przybylski <itor@o2.pl>
+
+usage() {
+  echo "usage: $0 [start|stop|status]"
+}
+
+fan_start() {
+  echo 1 > /sys/class/gpio/fan/value
+}
+
+fan_stop() {
+   echo 0 > /sys/class/gpio/fan/value
+}
+
+fan_status() {
+  status=`cat /sys/class/gpio/fan/value`
+  if [ $status = 0 ]; then
+	  echo "disable"
+  else
+	  echo "enable"
+  fi
+}
+
+case $1 in
+  start)
+    fan_start
+    ;;
+  stop)
+    fan_stop
+    ;;
+  status)
+    fan_status
+    ;;
+  *)
+    usage
+    ;;
+esac
+
+exit 0
