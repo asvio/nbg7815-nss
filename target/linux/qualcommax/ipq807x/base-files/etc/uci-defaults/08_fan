@@ -1,0 +1,14 @@
+#!/bin/sh
+
+. /lib/functions.sh
+
+board=$(board_name)
+
+case "$board" in
+	zyxel,nbg7815)
+		/etc/init.d/fanctld enable
+		/etc/init.d/fanctld start
+	;;
+esac
+
+exit 0
