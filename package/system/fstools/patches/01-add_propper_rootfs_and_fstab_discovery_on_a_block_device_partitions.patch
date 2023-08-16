@@ -1,0 +1,75 @@
+diff --git a/block.c b/block.c
+index 4b45200..4efa8bc 100644
+--- a/block.c
++++ b/block.c
+@@ -1397,14 +1397,14 @@ static int find_block_ubi_RO(libubi_t libubi, char *name, char *part, int plen)
+ }
+ #endif
+ 
+-static int find_root_dev(char *buf, int len)
++static int find_dev(const char *path, char *buf, int len)
+ {
+ 	DIR *d;
+ 	dev_t root;
+ 	struct stat s;
+ 	struct dirent *e;
+ 
+-	if (stat("/", &s))
++	if (stat(path, &s))
+ 		return -1;
+ 
+ 	if (!(d = opendir("/dev")))
+@@ -1426,6 +1426,15 @@ static int find_root_dev(char *buf, int len)
+ 	return -1;
+ }
+ 
++static int find_root_dev(char *buf, int len)
++{
++	int err = find_dev("/", buf, len);
++	if (err)
++	    err = find_dev("/rom", buf, len);
++
++	return err;
++}
++
+ static int test_fs_support(const char *name)
+ {
+ 	char line[128], *p;
+@@ -1470,7 +1479,14 @@ static int check_extroot(char *path)
+ 	FILE *fp;
+ 	int err;
+ 
+-	err = find_block_mtd("\"rootfs\"", devpath, sizeof(devpath));
++	snprintf(tag, sizeof(tag), "%s/etc/.extroot-default", path);
++	if (stat(tag, &s))
++		return 0;
++
++	err = find_root_dev(devpath, sizeof(devpath));
++	if (err) {
++		err = find_block_mtd("\"rootfs\"", devpath, sizeof(devpath));
++	}
+ #ifdef UBIFS_EXTROOT
+ 	if (err) {
+ 		libubi_t libubi;
+@@ -1480,9 +1496,6 @@ static int check_extroot(char *path)
+ 		libubi_close(libubi);
+ 	}
+ #endif
+-	if (err) {
+-		err = find_root_dev(devpath, sizeof(devpath));
+-	}
+ 	if (err) {
+ 		ULOG_ERR("extroot: unable to determine root device\n");
+ 		return -1;
+@@ -1646,6 +1659,11 @@ static int main_extroot(int argc, char **argv)
+ 	/* enable LOG_INFO messages */
+ 	ulog_threshold(LOG_INFO);
+ 
++	/* try the currently mounted overlay if exists */
++	err = mount_extroot("/tmp/overlay");
++	if (!err)
++	    return err;
++
+ 	/*
+ 	 * Look for "rootfs_data". We will want to mount it and check for
+ 	 * extroot configuration.
