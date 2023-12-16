@@ -13,7 +13,9 @@ PKG_CONFIG_DEPENDS += \
 	CONFIG_ATH10K_LEDS \
 	CONFIG_ATH10K_THERMAL \
 	CONFIG_ATH11K_THERMAL \
-	CONFIG_ATH_USER_REGD
+	CONFIG_ATH_USER_REGD \
+	CONFIG_ATH11K_MEM_PROFILE_512M \
+	CONFIG_ATH11K_NSS_SUPPORT
 
 ifdef CONFIG_PACKAGE_MAC80211_DEBUGFS
   config-y += \
@@ -56,6 +58,8 @@ config-$(CONFIG_ATH9K_UBNTHSR) += ATH9K_UBNTHSR
 config-$(CONFIG_ATH10K_LEDS) += ATH10K_LEDS
 config-$(CONFIG_ATH10K_THERMAL) += ATH10K_THERMAL
 config-$(CONFIG_ATH11K_THERMAL) += ATH11K_THERMAL
+config-$(CONFIG_ATH11K_MEM_PROFILE_512M) += ATH11K_MEM_PROFILE_512M
+config-$(CONFIG_ATH11K_NSS_SUPPORT) += ATH11K_NSS_SUPPORT
 
 config-$(call config_package,ath9k-htc) += ATH9K_HTC
 config-$(call config_package,ath10k) += ATH10K ATH10K_PCI
@@ -302,9 +306,14 @@ define KernelPackage/ath11k
   TITLE:=Qualcomm 802.11ax wireless chipset support (common code)
   URL:=https://wireless.wiki.kernel.org/en/users/drivers/ath11k
   DEPENDS+= +kmod-ath +@DRIVER_11AC_SUPPORT +@DRIVER_11AX_SUPPORT \
-  +kmod-crypto-michael-mic +ATH11K_THERMAL:kmod-hwmon-core +ATH11K_THERMAL:kmod-thermal
+  +kmod-crypto-michael-mic +ATH11K_THERMAL:kmod-hwmon-core +ATH11K_THERMAL:kmod-thermal \
+  +ATH11K_NSS_SUPPORT:kmod-qca-nss-drv
   FILES:=$(PKG_BUILD_DIR)/drivers/soc/qcom/qmi_helpers.ko \
   $(PKG_BUILD_DIR)/drivers/net/wireless/ath/ath11k/ath11k.ko
+ifdef CONFIG_ATH11K_NSS_SUPPORT
+  AUTOLOAD:=$(call AutoProbe,ath11k)
+  MODPARAMS.ath11k:=nss_offload=1 frame_mode=2
+endif
 endef
 
 define KernelPackage/ath11k/description
@@ -319,6 +328,18 @@ define KernelPackage/ath11k/config
                depends on PACKAGE_kmod-ath11k
                default y if TARGET_qualcommax
 
+       config ATH11K_NSS_SUPPORT
+               bool "Enable NSS WiFi offload"
+               default y if TARGET_qualcommax
+
+       if PACKAGE_kmod-ath11k
+
+         config ATH11K_MEM_PROFILE_512M
+               bool "Use limits for the 512MB memory size"
+               default y if ATH11K_NSS_SUPPORT
+               help
+                  This allows selecting the ath11k memory size profile to be used.
+       endif
 endef
 
 define KernelPackage/ath11k-ahb
