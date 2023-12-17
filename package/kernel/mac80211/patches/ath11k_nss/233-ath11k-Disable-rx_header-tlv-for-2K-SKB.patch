@@ -30,7 +30,17 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  		ret = ath11k_dp_tx_htt_rx_filter_setup(ar->ab, ring_id, ar->dp.mac_id,
 --- a/drivers/net/wireless/ath/ath11k/dp.h
 +++ b/drivers/net/wireless/ath/ath11k/dp.h
-@@ -609,7 +609,7 @@ enum htt_ppdu_stats_tag_type {
+@@ -219,7 +219,8 @@ struct ath11k_pdev_dp {
+ #define DP_REO_CMD_RING_SIZE		256
+ #define DP_REO_STATUS_RING_SIZE		2048
+ #define DP_RXDMA_BUF_RING_SIZE		4096
+-#define DP_RXDMA_REFILL_RING_SIZE	2048
++#define DP_RXDMA_REFILL_RING_SIZE	ATH11K_DP_RXDMA_REFILL_RING_SIZE
++#define DP_RXDMA_NSS_REFILL_RING_SIZE	ATH11K_DP_RXDMA_NSS_REFILL_RING_SIZE
+ #define DP_RXDMA_ERR_DST_RING_SIZE	1024
+ #define DP_RXDMA_MON_STATUS_RING_SIZE	ATH11K_DP_RXDMA_MON_STATUS_RING_SIZE
+ #define DP_RXDMA_MONITOR_BUF_RING_SIZE	ATH11K_DP_RXDMA_MONITOR_BUF_RING_SIZE
+@@ -609,7 +610,7 @@ enum htt_ppdu_stats_tag_type {
   *
   *    |31       26|25|24|23            16|15             8|7             0|
   *    |-----------------+----------------+----------------+---------------|
@@ -39,7 +49,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
   *    |-------------------------------------------------------------------|
   *    |              rsvd2               |           ring_buffer_size     |
   *    |-------------------------------------------------------------------|
-@@ -623,6 +623,14 @@ enum htt_ppdu_stats_tag_type {
+@@ -623,6 +624,14 @@ enum htt_ppdu_stats_tag_type {
   *    |-------------------------------------------------------------------|
   *    |                         tlv_filter_in_flags                       |
   *    |-------------------------------------------------------------------|
@@ -54,7 +64,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
   * Where:
   *     PS = pkt_swap
   *     SS = status_swap
-@@ -636,6 +644,9 @@ enum htt_ppdu_stats_tag_type {
+@@ -636,6 +645,9 @@ enum htt_ppdu_stats_tag_type {
   *                    More details can be got from enum htt_srng_ring_id
   *          b'24    - status_swap: 1 is to swap status TLV
   *          b'25    - pkt_swap:  1 is to swap packet TLV
@@ -64,7 +74,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
   *          b'26:31 - rsvd1:  reserved for future use
   * dword1 - b'0:16  - ring_buffer_size: size of buffers referenced by rx ring,
   *                    in byte units.
-@@ -665,6 +676,42 @@ enum htt_ppdu_stats_tag_type {
+@@ -665,6 +677,42 @@ enum htt_ppdu_stats_tag_type {
   * dword6 - b'0:31 -  tlv_filter_in_flags:
   *                    Filter in Attention/MPDU/PPDU/Header/User tlvs
   *                    Refer to CFG_TLV_FILTER_IN_FLAG defs
@@ -107,7 +117,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
   */
  
  #define HTT_RX_RING_SELECTION_CFG_CMD_INFO0_MSG_TYPE	GENMASK(7, 0)
-@@ -672,8 +719,16 @@ enum htt_ppdu_stats_tag_type {
+@@ -672,8 +720,16 @@ enum htt_ppdu_stats_tag_type {
  #define HTT_RX_RING_SELECTION_CFG_CMD_INFO0_RING_ID	GENMASK(23, 16)
  #define HTT_RX_RING_SELECTION_CFG_CMD_INFO0_SS		BIT(24)
  #define HTT_RX_RING_SELECTION_CFG_CMD_INFO0_PS		BIT(25)
@@ -124,7 +134,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  
  enum htt_rx_filter_tlv_flags {
  	HTT_RX_FILTER_TLV_FLAGS_MPDU_START		= BIT(0),
-@@ -977,6 +1032,14 @@ enum htt_rx_data_pkt_filter_tlv_flasg3 {
+@@ -977,6 +1033,14 @@ enum htt_rx_data_pkt_filter_tlv_flasg3 {
  		HTT_RX_FILTER_TLV_FLAGS_PER_MSDU_HEADER | \
  		HTT_RX_FILTER_TLV_FLAGS_ATTENTION)
  
@@ -139,7 +149,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  struct htt_rx_ring_selection_cfg_cmd {
  	u32 info0;
  	u32 info1;
-@@ -985,6 +1048,10 @@ struct htt_rx_ring_selection_cfg_cmd {
+@@ -985,6 +1049,10 @@ struct htt_rx_ring_selection_cfg_cmd {
  	u32 pkt_type_en_flags2;
  	u32 pkt_type_en_flags3;
  	u32 rx_filter_tlv;
@@ -150,7 +160,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  } __packed;
  
  struct htt_rx_ring_tlv_filter {
-@@ -993,6 +1060,14 @@ struct htt_rx_ring_tlv_filter {
+@@ -993,6 +1061,14 @@ struct htt_rx_ring_tlv_filter {
  	u32 pkt_filter_flags1; /* MGMT */
  	u32 pkt_filter_flags2; /* CTRL */
  	u32 pkt_filter_flags3; /* DATA */
@@ -744,7 +754,28 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  
 --- a/drivers/net/wireless/ath/ath11k/hw.h
 +++ b/drivers/net/wireless/ath/ath11k/hw.h
-@@ -129,6 +129,8 @@ enum ath11k_bus {
+@@ -22,6 +22,11 @@
+ #define ATH11K_DP_RXDMA_MON_STATUS_RING_SIZE	512
+ #define ATH11K_DP_RXDMA_MONITOR_BUF_RING_SIZE	128
+ #define ATH11K_DP_RXDMA_MONITOR_DST_RING_SIZE	128
++#define ATH11K_DP_RXDMA_REFILL_RING_SIZE	2048
++/* 256b desc TLV + 4b(rounded) Pad + 30byte max nwifi header +
++ * 18byte mesh hdr + 8byte snap + 1500 eth payload
++ */
++#define ATH11K_DP_RXDMA_NSS_REFILL_RING_SIZE	1816
+ #else
+ /* Num VDEVS per radio */
+ #define TARGET_NUM_VDEVS(ab)	(ab->hw_params.num_vdevs)
+@@ -34,6 +39,8 @@
+ #define ATH11K_DP_RXDMA_MON_STATUS_RING_SIZE	1024
+ #define ATH11K_DP_RXDMA_MONITOR_BUF_RING_SIZE	4096
+ #define ATH11K_DP_RXDMA_MONITOR_DST_RING_SIZE	2048
++#define ATH11K_DP_RXDMA_REFILL_RING_SIZE	2048
++#define ATH11K_DP_RXDMA_NSS_REFILL_RING_SIZE	2048
+ #endif
+ 
+ /* Num of peers for Single Radio mode */
+@@ -129,6 +136,8 @@ enum ath11k_bus {
  
  struct hal_rx_desc;
  struct hal_tcl_data_cmd;
@@ -753,7 +784,15 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  
  struct ath11k_hw_ring_mask {
  	u8 tx[ATH11K_EXT_IRQ_GRP_NUM_MAX];
-@@ -285,6 +287,16 @@ struct ath11k_hw_ops {
+@@ -218,6 +227,7 @@ struct ath11k_hw_params {
+ 	const struct ath11k_hw_hal_params *hal_params;
+ 	bool supports_dynamic_smps_6ghz;
+ 	bool alloc_cacheable_memory;
++	u8 reo_dest_ring_map_shift;
+ 	bool supports_rssi_stats;
+ 	bool fw_wmi_diag_event;
+ 	bool current_cc_support;
+@@ -285,6 +295,16 @@ struct ath11k_hw_ops {
  	bool (*rx_desc_mac_addr2_valid)(struct hal_rx_desc *desc);
  	u8* (*rx_desc_mpdu_start_addr2)(struct hal_rx_desc *desc);
  	u32 (*get_ring_selector)(struct sk_buff *skb);
@@ -854,3 +893,14 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
 +
 +
  #endif /* ATH11K_RX_DESC_H */
+--- a/drivers/net/wireless/ath/ath11k/nss.c
++++ b/drivers/net/wireless/ath/ath11k/nss.c
+@@ -1800,7 +1800,7 @@ static int ath11k_nss_init(struct ath11k
+ 
+ 	/* fill rx parameters to initialize rx context */
+ 	wim->wrip.tlv_size = ab->hw_params.hal_desc_sz;
+-	wim->wrip.rx_buf_len = DP_RX_BUFFER_SIZE;
++	wim->wrip.rx_buf_len = DP_RXDMA_NSS_REFILL_RING_SIZE;
+ 
+ 	/* fill hal srng message */
+ 	wim->hssm.dev_base_addr = (u32)ab->mem_pa;

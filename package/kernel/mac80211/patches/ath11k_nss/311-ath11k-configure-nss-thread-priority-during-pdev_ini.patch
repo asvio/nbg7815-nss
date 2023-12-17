@@ -19,7 +19,7 @@ Signed-off-by: Seevalamuthu Mariappan <seevalam@codeaurora.org>
   * Copyright (c) 2020 The Linux Foundation. All rights reserved.
   */
 +#include <linux/of.h>
-
+ 
  #include "debug.h"
  #include "mac.h"
 @@ -1782,6 +1783,7 @@ static int ath11k_nss_init(struct ath11k
@@ -27,16 +27,16 @@ Signed-off-by: Seevalamuthu Mariappan <seevalam@codeaurora.org>
  	struct ath11k_dp *dp;
  	int i, ret;
 +	struct device *dev = ab->dev;
-
+ 
  	dp = &ab->dp;
-
+ 
 @@ -1801,6 +1803,8 @@ static int ath11k_nss_init(struct ath11k
  	/* fill rx parameters to initialize rx context */
  	wim->wrip.tlv_size = ab->hw_params.hal_desc_sz;
- 	wim->wrip.rx_buf_len = DP_RX_BUFFER_SIZE;
+ 	wim->wrip.rx_buf_len = DP_RXDMA_NSS_REFILL_RING_SIZE;
 +	if (of_property_read_bool(dev->of_node, "nss-radio-priority"))
 +		wim->flags |= WIFILI_MULTISOC_THREAD_MAP_ENABLE;
-
+ 
  	/* fill hal srng message */
  	wim->hssm.dev_base_addr = (u32)ab->mem_pa;
 @@ -1977,11 +1981,13 @@ int ath11k_nss_pdev_init(struct ath11k_b
@@ -51,13 +51,13 @@ Signed-off-by: Seevalamuthu Mariappan <seevalam@codeaurora.org>
 -	int ret, i;
 +	int ret, i, scheme_id = 0;
 +	u32 nss_radio_priority;
-
+ 
  	dyn_if_type = ath11k_nss_get_dynamic_interface_type(ab);
-
+ 
 @@ -2010,6 +2016,15 @@ int ath11k_nss_pdev_init(struct ath11k_b
  	ath11k_dbg(ab, ATH11K_DBG_NSS, "nss pdev init - id:%d init ctxt:%p ifnum:%d\n",
  		   ar->pdev->pdev_id, ar->nss.ctx, ar->nss.if_num);
-
+ 
 +	if (!of_property_read_u32(dev->of_node, "nss-radio-priority", &nss_radio_priority)) {
 +		scheme_id = nss_wifili_thread_scheme_alloc(ab->nss.ctx, ar->nss.if_num, nss_radio_priority);
 +		if (scheme_id == WIFILI_SCHEME_ID_INVALID) {
@@ -75,13 +75,13 @@ Signed-off-by: Seevalamuthu Mariappan <seevalam@codeaurora.org>
  	pdevmsg->target_pdev_id = ar->pdev->pdev_id;
  	pdevmsg->num_rx_swdesc = WIFILI_RX_DESC_POOL_WEIGHT * DP_RXDMA_BUF_RING_SIZE;
 +	pdevmsg->scheme_id = scheme_id;
-
+ 
  	/* Store rxdma ring info to the message */
  	refill_ring_id = ar->dp.rx_refill_buf_ring.refill_buf_ring.ring_id;
 @@ -2315,6 +2331,9 @@ int ath11k_nss_pdev_deinit(struct ath11k
  	/* pdev deinit msg success, dealloc, deregister and return */
  	ret = 0;
-
+ 
 +	/* reset thread scheme*/
 +	nss_wifili_thread_scheme_dealloc(ab->nss.ctx, ar->nss.if_num);
 +
@@ -95,13 +95,13 @@ Signed-off-by: Seevalamuthu Mariappan <seevalam@codeaurora.org>
  #define WIFILI_NSS_CCE_DISABLED 0x1
  #define WIFILI_ADDTL_MEM_SEG_SET 0x000000002
 +#define WIFILI_MULTISOC_THREAD_MAP_ENABLE 0x10
-
+ 
  /* ATH11K NSS PEER Info */
  /* Host memory allocated for peer info storage in nss */
 @@ -108,6 +109,8 @@ enum ath11k_nss_vdev_cmd {
  	ATH11K_NSS_WIFI_VDEV_DECAP_TYPE_CMD,
  };
-
+ 
 +#define WIFILI_SCHEME_ID_INVALID	-1
 +
  enum ath11k_nss_opmode {

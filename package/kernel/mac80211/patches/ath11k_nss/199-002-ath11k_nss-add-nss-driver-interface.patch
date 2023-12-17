@@ -20,9 +20,9 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
 --- a/drivers/net/wireless/ath/ath11k/Kconfig
 +++ b/drivers/net/wireless/ath/ath11k/Kconfig
 @@ -13,6 +13,16 @@ config ATH11K
-
+ 
  	  If you choose to build a module, it'll be called ath11k.
-
+ 
 +config ATH11K_NSS_SUPPORT
 +	bool "QCA ath11k nss support"
 +	depends on ATH11K
@@ -43,7 +43,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  ath11k-$(CPTCFG_ATH11K_SPECTRAL) += spectral.o
  ath11k-$(CONFIG_PM) += wow.o
 +ath11k-$(CPTCFG_ATH11K_NSS_SUPPORT) += nss.o
-
+ 
  obj-$(CPTCFG_ATH11K_AHB) += ath11k_ahb.o
  ath11k_ahb-y += ahb.o
 --- /dev/null
@@ -2757,12 +2757,12 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  	void (*get_ce_msi_idx)(struct ath11k_base *ab, u32 ce_id, u32 *msi_idx);
 +	u32 (*get_window_offset)(struct ath11k_base *ab, u32 offset);
  };
-
+ 
  static inline void ath11k_hif_ce_irq_enable(struct ath11k_base *ab)
 @@ -136,6 +137,14 @@ static inline void ath11k_get_msi_addres
  	ab->hif.ops->get_msi_address(ab, msi_addr_lo, msi_addr_hi);
  }
-
+ 
 +static inline u32 ath11k_hif_get_window_offset(struct ath11k_base *ab, u32 offset)
 +{
 +	if (ab->hif.ops->get_window_offset)
@@ -2779,7 +2779,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
 @@ -67,6 +67,20 @@ static u32 ath11k_pci_get_window_start(s
  		return ATH11K_PCI_WINDOW_START;
  }
-
+ 
 +static inline u32 ath11k_pci_get_window_offset(struct ath11k_base *ab,
 +					       u32 offset)
 +{
@@ -2804,13 +2804,13 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
 +	.get_window_offset = ath11k_pci_get_window_offset,
  	.get_ce_msi_idx = ath11k_pcic_get_ce_msi_idx,
  };
-
+ 
 --- a/drivers/net/wireless/ath/ath11k/dp_rx.c
 +++ b/drivers/net/wireless/ath/ath11k/dp_rx.c
 @@ -992,6 +992,29 @@ unlock_exit:
  	spin_unlock_bh(&ab->base_lock);
  }
-
+ 
 +/* Sends WMI config to filter packets to route packets to WBM release ring */
 +int ath11k_dp_rx_pkt_type_filter(struct ath11k *ar, enum ath11k_routing_pkt_type pkt_type, u32 meta_data)
 +{
@@ -2842,7 +2842,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
 @@ -1164,6 +1164,44 @@ int ath11k_wmi_send_pdev_set_regdomain(s
  	return ret;
  }
-
+ 
 +int ath11k_wmi_send_pdev_pkt_route(struct ath11k *ar, struct ath11k_wmi_pkt_route_param *param)
 +{
 +	struct ath11k_pdev_wmi *wmi = ar->wmi;
@@ -2889,7 +2889,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
 @@ -2873,6 +2873,27 @@ struct pdev_set_regdomain_params {
  	u32 pdev_id;
  };
-
+ 
 + /* Defines various options for routing policy */
 +enum wmi_pdev_dest_ring_handler_type {
 +	ATH11K_WMI_PKTROUTE_USE_CCE  = 0,
@@ -2917,7 +2917,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
 @@ -3121,6 +3142,16 @@ struct wmi_pdev_set_regdomain_cmd {
  	u32 dfs_domain;
  } __packed;
-
+ 
 +struct wmi_pdev_pkt_route_cmd {
 +	u32 tlv_header;
 +	u32 pdev_id;
@@ -2931,10 +2931,10 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  struct wmi_peer_set_param_cmd {
  	u32 tlv_header;
  	u32 vdev_id;
-@@ -6364,6 +6395,8 @@ int ath11k_wmi_send_peer_create_cmd(stru
+@@ -6362,6 +6393,8 @@ int ath11k_wmi_send_peer_create_cmd(stru
  int ath11k_wmi_vdev_set_param_cmd(struct ath11k *ar, u32 vdev_id,
  				  u32 param_id, u32 param_value);
-
+ 
 +int ath11k_wmi_send_pdev_pkt_route(struct ath11k *ar,
 +				   struct ath11k_wmi_pkt_route_param *param);
  int ath11k_wmi_set_sta_ps_param(struct ath11k *ar, u32 vdev_id,
@@ -2945,7 +2945,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
 @@ -20,6 +20,34 @@
  #define DP_RX_MPDU_ERR_MPDU_LEN			BIT(6)
  #define DP_RX_MPDU_ERR_UNENCRYPTED_FRAME	BIT(7)
-
+ 
 +/* different supported pkt types for routing */
 +enum ath11k_routing_pkt_type {
 +	ATH11K_PKT_TYPE_ARP_IPV4,
@@ -2992,7 +2992,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
 @@ -6365,6 +6365,16 @@ static int ath11k_mac_op_start(struct ie
  		goto err;
  	}
-
+ 
 +	/* nss offload requires eapol packets to be routed to wbm release ring */
 +	if (ab->nss.enabled) {
 +		ret = ath11k_dp_rx_pkt_type_filter(ar, ATH11K_PKT_TYPE_EAP,
@@ -3004,5 +3004,15 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
 +	}
 +
  	__ath11k_set_antenna(ar, ar->cfg_tx_chainmask, ar->cfg_rx_chainmask);
-
+ 
  	/* TODO: Do we need to enable ANI? */
+--- a/drivers/net/wireless/ath/ath11k/core.h
++++ b/drivers/net/wireless/ath/ath11k/core.h
+@@ -913,6 +913,7 @@ struct ath11k_base {
+ 	struct list_head peers;
+ 	wait_queue_head_t peer_mapping_wq;
+ 	u8 mac_addr[ETH_ALEN];
++	int userpd_id;
+ 	int irq_num[ATH11K_IRQ_NUM_MAX];
+ 	struct ath11k_ext_irq_grp ext_irq_grp[ATH11K_EXT_IRQ_GRP_NUM_MAX];
+ 	struct ath11k_targ_cap target_caps;

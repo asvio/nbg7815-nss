@@ -236,7 +236,15 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  static struct ath11k_hw_params ath11k_hw_params[] = {
  	{
  		.hw_rev = ATH11K_HW_IPQ8074,
-@@ -177,7 +182,7 @@ static struct ath11k_hw_params ath11k_hw
+@@ -100,6 +105,7 @@ static struct ath11k_hw_params ath11k_hw
+ 		.num_peers = 512,
+ 		.supports_suspend = false,
+ 		.hal_desc_sz = sizeof(struct hal_rx_desc_ipq8074),
++		.reo_dest_ring_map_shift = HAL_REO_DEST_RING_CTRL_HASH_RING_SHIFT,
+ 		.supports_regdb = false,
+ 		.fix_l1ss = true,
+ 		.credit_flow = false,
+@@ -177,7 +183,7 @@ static struct ath11k_hw_params ath11k_hw
  		.coldboot_cal_mm = true,
  		.coldboot_cal_ftm = true,
  		.cbcal_restart_fw = true,
@@ -245,7 +253,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  		.num_vdevs = 16 + 1,
  		.num_peers = 512,
  		.supports_suspend = false,
-@@ -259,7 +264,7 @@ static struct ath11k_hw_params ath11k_hw
+@@ -259,7 +265,7 @@ static struct ath11k_hw_params ath11k_hw
  		.coldboot_cal_mm = false,
  		.coldboot_cal_ftm = false,
  		.cbcal_restart_fw = false,
@@ -254,7 +262,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  		.num_vdevs = 16 + 1,
  		.num_peers = 512,
  		.supports_suspend = true,
-@@ -426,7 +431,7 @@ static struct ath11k_hw_params ath11k_hw
+@@ -426,7 +432,7 @@ static struct ath11k_hw_params ath11k_hw
  		.coldboot_cal_mm = false,
  		.coldboot_cal_ftm = false,
  		.cbcal_restart_fw = false,
@@ -263,7 +271,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  		.num_vdevs = 16 + 1,
  		.num_peers = 512,
  		.supports_suspend = true,
-@@ -509,7 +514,7 @@ static struct ath11k_hw_params ath11k_hw
+@@ -509,7 +515,7 @@ static struct ath11k_hw_params ath11k_hw
  		.coldboot_cal_mm = false,
  		.coldboot_cal_ftm = false,
  		.cbcal_restart_fw = false,
@@ -272,7 +280,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  		.num_vdevs = 16 + 1,
  		.num_peers = 512,
  		.supports_suspend = true,
-@@ -593,7 +598,7 @@ static struct ath11k_hw_params ath11k_hw
+@@ -593,7 +599,7 @@ static struct ath11k_hw_params ath11k_hw
  		.coldboot_cal_mm = true,
  		.coldboot_cal_ftm = true,
  		.cbcal_restart_fw = false,
@@ -281,7 +289,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  		.num_vdevs = 16 + 1,
  		.num_peers = 512,
  		.supports_suspend = false,
-@@ -672,7 +677,7 @@ static struct ath11k_hw_params ath11k_hw
+@@ -672,7 +678,7 @@ static struct ath11k_hw_params ath11k_hw
  		.supports_monitor = false,
  		.supports_sta_ps = false,
  		.supports_shadow_regs = false,
@@ -290,7 +298,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  		.num_vdevs = 16 + 1,
  		.num_peers = 512,
  		.supports_regdb = false,
-@@ -710,7 +715,23 @@ static struct ath11k_hw_params ath11k_hw
+@@ -710,7 +716,23 @@ static struct ath11k_hw_params ath11k_hw
  	},
  };
  
@@ -315,7 +323,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  {
  	WARN_ON(!ab->hw_params.single_pdev_only);
  
-@@ -794,8 +815,10 @@ int ath11k_core_suspend(struct ath11k_ba
+@@ -794,8 +816,10 @@ int ath11k_core_suspend(struct ath11k_ba
  
  	ret = ath11k_dp_rx_pktlog_stop(ab, true);
  	if (ret) {
@@ -328,7 +336,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  		return ret;
  	}
  
-@@ -807,13 +830,15 @@ int ath11k_core_suspend(struct ath11k_ba
+@@ -807,13 +831,15 @@ int ath11k_core_suspend(struct ath11k_ba
  
  	ret = ath11k_wow_enable(ab);
  	if (ret) {
@@ -346,7 +354,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  			    ret);
  		return ret;
  	}
-@@ -853,7 +878,8 @@ int ath11k_core_resume(struct ath11k_bas
+@@ -853,7 +879,8 @@ int ath11k_core_resume(struct ath11k_bas
  
  	ret = ath11k_hif_resume(ab);
  	if (ret) {
@@ -356,7 +364,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  		return ret;
  	}
  
-@@ -869,7 +895,8 @@ int ath11k_core_resume(struct ath11k_bas
+@@ -869,7 +896,8 @@ int ath11k_core_resume(struct ath11k_bas
  
  	ret = ath11k_wow_wakeup(ab);
  	if (ret) {
@@ -366,7 +374,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  		return ret;
  	}
  
-@@ -877,7 +904,8 @@ int ath11k_core_resume(struct ath11k_bas
+@@ -877,7 +905,8 @@ int ath11k_core_resume(struct ath11k_bas
  }
  EXPORT_SYMBOL(ath11k_core_resume);
  
@@ -376,7 +384,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  {
  	struct ath11k_base *ab = data;
  	const char *magic = ATH11K_SMBIOS_BDF_EXT_MAGIC;
-@@ -914,7 +942,8 @@ static void ath11k_core_check_cc_code_bd
+@@ -914,7 +943,8 @@ static void ath11k_core_check_cc_code_bd
  		ath11k_dbg(ab, ATH11K_DBG_BOOT, "smbios worldwide regdomain\n");
  		break;
  	default:
@@ -386,7 +394,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  			   smbios->country_code_flag);
  		break;
  	}
-@@ -922,7 +951,8 @@ static void ath11k_core_check_cc_code_bd
+@@ -922,7 +952,8 @@ static void ath11k_core_check_cc_code_bd
  	spin_unlock_bh(&ab->base_lock);
  
  	if (!smbios->bdf_enabled) {
@@ -396,7 +404,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  		return;
  	}
  
-@@ -933,22 +963,26 @@ static void ath11k_core_check_cc_code_bd
+@@ -933,22 +964,26 @@ static void ath11k_core_check_cc_code_bd
  		return;
  	}
  
@@ -431,7 +439,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  		return;
  	}
  
-@@ -984,9 +1018,10 @@ int ath11k_core_check_dt(struct ath11k_b
+@@ -984,9 +1019,10 @@ int ath11k_core_check_dt(struct ath11k_b
  		return -ENODATA;
  
  	if (strscpy(ab->qmi.target.bdf_ext, variant, max_len) < 0)
@@ -445,7 +453,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  
  	return 0;
  }
-@@ -1012,24 +1047,20 @@ static int __ath11k_core_create_board_na
+@@ -1012,24 +1048,20 @@ static int __ath11k_core_create_board_na
  	case ATH11K_BDF_SEARCH_BUS_AND_BOARD:
  		switch (name_type) {
  		case ATH11K_BDF_NAME_FULL:
@@ -479,7 +487,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  				  ath11k_bus_str(ab->hif.bus),
  				  ab->qmi.target.chip_id);
  			break;
-@@ -1038,8 +1069,7 @@ static int __ath11k_core_create_board_na
+@@ -1038,8 +1070,7 @@ static int __ath11k_core_create_board_na
  	default:
  		scnprintf(name, name_len,
  			  "bus=%s,qmi-chip-id=%d,qmi-board-id=%d%s",
@@ -489,7 +497,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  			  ab->qmi.target.board_id, variant);
  		break;
  	}
-@@ -1056,22 +1086,22 @@ static int ath11k_core_create_board_name
+@@ -1056,22 +1087,22 @@ static int ath11k_core_create_board_name
  					       ATH11K_BDF_NAME_FULL);
  }
  
@@ -518,7 +526,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  {
  	return __ath11k_core_create_board_name(ab, name, name_len, false,
  					       ATH11K_BDF_NAME_CHIP_ID);
-@@ -1093,8 +1123,8 @@ const struct firmware *ath11k_core_firmw
+@@ -1093,8 +1124,8 @@ const struct firmware *ath11k_core_firmw
  	if (ret)
  		return ERR_PTR(ret);
  
@@ -529,7 +537,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  
  	return fw;
  }
-@@ -1110,10 +1140,8 @@ void ath11k_core_free_bdf(struct ath11k_
+@@ -1110,10 +1141,8 @@ void ath11k_core_free_bdf(struct ath11k_
  static int ath11k_core_parse_bd_ie_board(struct ath11k_base *ab,
  					 struct ath11k_board_data *bd,
  					 const void *buf, size_t buf_len,
@@ -542,7 +550,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  {
  	const struct ath11k_fw_ie *hdr;
  	bool name_match_found;
-@@ -1135,8 +1163,8 @@ static int ath11k_core_parse_bd_ie_board
+@@ -1135,8 +1164,8 @@ static int ath11k_core_parse_bd_ie_board
  
  		if (buf_len < ALIGN(board_ie_len, 4)) {
  			ath11k_err(ab, "invalid %s length: %zu < %zu\n",
@@ -553,7 +561,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  			ret = -EINVAL;
  			goto out;
  		}
-@@ -1148,24 +1176,22 @@ static int ath11k_core_parse_bd_ie_board
+@@ -1148,24 +1177,22 @@ static int ath11k_core_parse_bd_ie_board
  			if (board_ie_len != strlen(boardname))
  				goto next;
  
@@ -583,7 +591,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  
  			bd->data = board_ie_data;
  			bd->len = board_ie_len;
-@@ -1174,8 +1200,7 @@ static int ath11k_core_parse_bd_ie_board
+@@ -1174,8 +1201,7 @@ static int ath11k_core_parse_bd_ie_board
  			goto out;
  		} else {
  			ath11k_warn(ab, "unknown %s id found: %d\n",
@@ -593,7 +601,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  		}
  next:
  		/* jump over the padding */
-@@ -1195,8 +1220,7 @@ out:
+@@ -1195,8 +1221,7 @@ out:
  static int ath11k_core_fetch_board_data_api_n(struct ath11k_base *ab,
  					      struct ath11k_board_data *bd,
  					      const char *boardname,
@@ -603,7 +611,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  					      int data_id)
  {
  	size_t len, magic_len;
-@@ -1217,14 +1241,16 @@ static int ath11k_core_fetch_board_data_
+@@ -1217,14 +1242,16 @@ static int ath11k_core_fetch_board_data_
  	data = bd->fw->data;
  	len = bd->fw->size;
  
@@ -624,7 +632,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  		ret = -EINVAL;
  		goto err;
  	}
-@@ -1238,8 +1264,10 @@ static int ath11k_core_fetch_board_data_
+@@ -1238,8 +1265,10 @@ static int ath11k_core_fetch_board_data_
  	/* magic is padded to 4 bytes */
  	magic_len = ALIGN(magic_len, 4);
  	if (len < magic_len) {
@@ -637,7 +645,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  		ret = -EINVAL;
  		goto err;
  	}
-@@ -1256,19 +1284,19 @@ static int ath11k_core_fetch_board_data_
+@@ -1256,19 +1285,19 @@ static int ath11k_core_fetch_board_data_
  		data = hdr->data;
  
  		if (len < ALIGN(ie_len, 4)) {
@@ -663,7 +671,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  			if (ret == -ENOENT)
  				/* no match found, continue */
  				goto next;
-@@ -1290,8 +1318,8 @@ out:
+@@ -1290,8 +1319,8 @@ out:
  	if (!bd->data || !bd->len) {
  		ath11k_dbg(ab, ATH11K_DBG_BOOT,
  			   "failed to fetch %s for %s from %s\n",
@@ -674,7 +682,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  		ret = -ENODATA;
  		goto err;
  	}
-@@ -1321,7 +1349,8 @@ int ath11k_core_fetch_board_data_api_1(s
+@@ -1321,7 +1350,8 @@ int ath11k_core_fetch_board_data_api_1(s
  #define BOARD_NAME_SIZE 200
  int ath11k_core_fetch_bdf(struct ath11k_base *ab, struct ath11k_board_data *bd)
  {
@@ -684,7 +692,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  	char *filename, filepath[100];
  	int ret = 0;
  
-@@ -1388,15 +1417,18 @@ int ath11k_core_fetch_bdf(struct ath11k_
+@@ -1388,15 +1418,18 @@ int ath11k_core_fetch_bdf(struct ath11k_
  		goto exit;
  
  	ab->bd_api = 1;
@@ -708,7 +716,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  
  		ath11k_err(ab, "failed to fetch board data for %s from %s\n",
  			   chip_id_boardname, filepath);
-@@ -1411,12 +1443,14 @@ exit:
+@@ -1411,12 +1444,14 @@ exit:
  	kfree(chip_id_boardname);
  
  	if (!ret)
@@ -725,7 +733,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  {
  	char boardname[BOARD_NAME_SIZE], default_boardname[BOARD_NAME_SIZE];
  	int ret;
-@@ -1439,7 +1473,8 @@ int ath11k_core_fetch_regdb(struct ath11
+@@ -1439,7 +1474,8 @@ int ath11k_core_fetch_regdb(struct ath11
  						     BOARD_NAME_SIZE);
  	if (ret) {
  		ath11k_dbg(ab, ATH11K_DBG_BOOT,
@@ -735,7 +743,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  		goto exit;
  	}
  
-@@ -1450,7 +1485,8 @@ int ath11k_core_fetch_regdb(struct ath11
+@@ -1450,7 +1486,8 @@ int ath11k_core_fetch_regdb(struct ath11
  	if (!ret)
  		goto exit;
  
@@ -745,7 +753,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  	if (ret)
  		ath11k_dbg(ab, ATH11K_DBG_BOOT, "failed to fetch %s from %s\n",
  			   ATH11K_REGDB_FILE_NAME, ab->hw_params.fw.dir);
-@@ -1542,14 +1578,14 @@ static int ath11k_core_pdev_create(struc
+@@ -1542,14 +1579,14 @@ static int ath11k_core_pdev_create(struc
  
  	ret = ath11k_mac_register(ab);
  	if (ret) {
@@ -763,7 +771,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  		goto err_mac_unregister;
  	}
  
-@@ -1637,14 +1673,16 @@ static int ath11k_core_start(struct ath1
+@@ -1637,14 +1674,16 @@ static int ath11k_core_start(struct ath1
  
  	ret = ath11k_wmi_wait_for_service_ready(ab);
  	if (ret) {
@@ -782,7 +790,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  			   ret);
  		goto err_hif_stop;
  	}
-@@ -1653,7 +1691,9 @@ static int ath11k_core_start(struct ath1
+@@ -1653,7 +1692,9 @@ static int ath11k_core_start(struct ath1
  
  	ret = ath11k_dp_pdev_reo_setup(ab);
  	if (ret) {
@@ -793,7 +801,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  		goto err_mac_destroy;
  	}
  
-@@ -1665,13 +1705,15 @@ static int ath11k_core_start(struct ath1
+@@ -1665,13 +1706,15 @@ static int ath11k_core_start(struct ath1
  
  	ret = ath11k_wmi_wait_for_unified_ready(ab);
  	if (ret) {
@@ -811,7 +819,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  		ret = ath11k_wmi_set_hw_mode(ab, WMI_HOST_HW_MODE_DBS);
  		if (ret) {
  			ath11k_err(ab, "failed to send dbs mode: %d\n", ret);
-@@ -1681,7 +1723,8 @@ static int ath11k_core_start(struct ath1
+@@ -1681,7 +1724,8 @@ static int ath11k_core_start(struct ath1
  
  	ret = ath11k_dp_tx_htt_h2t_ver_req_msg(ab);
  	if (ret) {
@@ -821,7 +829,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  			   ret);
  		goto err_reo_cleanup;
  	}
-@@ -1749,7 +1792,8 @@ int ath11k_core_qmi_firmware_ready(struc
+@@ -1749,7 +1793,8 @@ int ath11k_core_qmi_firmware_ready(struc
  		clear_bit(ATH11K_FLAG_RAW_MODE, &ab->dev_flags);
  		break;
  	default:
@@ -831,7 +839,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  		return -EINVAL;
  	}
  
-@@ -1850,7 +1894,8 @@ void ath11k_core_halt(struct ath11k *ar)
+@@ -1850,7 +1895,8 @@ void ath11k_core_halt(struct ath11k *ar)
  
  static void ath11k_update_11d(struct work_struct *work)
  {
@@ -841,7 +849,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  	struct ath11k *ar;
  	struct ath11k_pdev *pdev;
  	struct wmi_set_current_country_params set_current_param = {};
-@@ -1861,19 +1906,20 @@ static void ath11k_update_11d(struct wor
+@@ -1861,19 +1907,20 @@ static void ath11k_update_11d(struct wor
  	spin_unlock_bh(&ab->base_lock);
  
  	ath11k_dbg(ab, ATH11K_DBG_WMI, "update 11d new cc %c%c\n",
@@ -868,7 +876,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  	}
  }
  
-@@ -1910,8 +1956,8 @@ void ath11k_core_pre_reconfigure_recover
+@@ -1910,8 +1957,8 @@ void ath11k_core_pre_reconfigure_recover
  		complete(&ar->thermal.wmi_sync);
  
  		wake_up(&ar->dp.tx_empty_waitq);
@@ -879,7 +887,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  		idr_destroy(&ar->txmgmt_idr);
  		wake_up(&ar->txmgmt_empty_waitq);
  
-@@ -1947,9 +1993,10 @@ static void ath11k_core_post_reconfigure
+@@ -1947,9 +1994,10 @@ static void ath11k_core_post_reconfigure
  			ieee80211_restart_hw(ar->hw);
  			break;
  		case ATH11K_STATE_OFF:
@@ -893,7 +901,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  			break;
  		case ATH11K_STATE_RESTARTING:
  			break;
-@@ -1957,8 +2004,10 @@ static void ath11k_core_post_reconfigure
+@@ -1957,8 +2005,10 @@ static void ath11k_core_post_reconfigure
  			ar->state = ATH11K_STATE_WEDGED;
  			fallthrough;
  		case ATH11K_STATE_WEDGED:
@@ -906,7 +914,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  			break;
  		case ATH11K_STATE_FTM:
  			ath11k_dbg(ab, ATH11K_DBG_TESTMODE,
-@@ -1973,12 +2022,14 @@ static void ath11k_core_post_reconfigure
+@@ -1973,12 +2023,14 @@ static void ath11k_core_post_reconfigure
  
  static void ath11k_core_restart(struct work_struct *work)
  {
@@ -923,7 +931,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  		return;
  	}
  
-@@ -1991,12 +2042,14 @@ static void ath11k_core_restart(struct w
+@@ -1991,12 +2043,14 @@ static void ath11k_core_restart(struct w
  
  static void ath11k_core_reset(struct work_struct *work)
  {
@@ -940,7 +948,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  		return;
  	}
  
-@@ -2022,8 +2075,8 @@ static void ath11k_core_reset(struct wor
+@@ -2022,8 +2076,8 @@ static void ath11k_core_reset(struct wor
  		ath11k_warn(ab, "already resetting count %d\n", reset_count);
  
  		reinit_completion(&ab->reset_complete);
@@ -951,7 +959,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  
  		if (time_left) {
  			ath11k_dbg(ab, ATH11K_DBG_BOOT, "to skip reset\n");
-@@ -2050,8 +2103,8 @@ static void ath11k_core_reset(struct wor
+@@ -2050,8 +2104,8 @@ static void ath11k_core_reset(struct wor
  
  	ath11k_dbg(ab, ATH11K_DBG_BOOT, "waiting recovery start...\n");
  
@@ -962,7 +970,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  
  	ath11k_hif_power_down(ab);
  	ath11k_hif_power_up(ab);
-@@ -2073,22 +2126,21 @@ static int ath11k_init_hw_params(struct
+@@ -2073,22 +2127,21 @@ static int ath11k_init_hw_params(struct
  	}
  
  	if (i == ARRAY_SIZE(ath11k_hw_params)) {
@@ -989,7 +997,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  			ab->hw_params.fw_mem_mode = 1;
  			ab->hw_params.num_vdevs = 8;
  			ab->hw_params.num_peers = 128;
-@@ -2099,7 +2151,8 @@ static int ath11k_init_hw_params(struct
+@@ -2099,7 +2152,8 @@ static int ath11k_init_hw_params(struct
  			ab->hw_params.coldboot_cal_mm = false;
  			ab->hw_params.coldboot_cal_ftm = false;
  		} else
@@ -999,7 +1007,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  	}
  
  	ath11k_info(ab, "%s\n", ab->hw_params.name);
-@@ -2215,5 +2268,6 @@ err_sc_free:
+@@ -2215,5 +2269,6 @@ err_sc_free:
  }
  EXPORT_SYMBOL(ath11k_core_alloc);
  
@@ -1007,3 +1015,20 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
 +MODULE_DESCRIPTION(
 +	"Core module for Qualcomm Atheros 802.11ax wireless LAN cards.");
  MODULE_LICENSE("Dual BSD/GPL");
+--- a/drivers/net/wireless/ath/ath11k/debugfs.c
++++ b/drivers/net/wireless/ath/ath11k/debugfs.c
+@@ -1592,10 +1592,13 @@ static ssize_t ath11k_dump_mgmt_stats(st
+ 				      size_t count, loff_t *ppos)
+ {
+ 	struct ath11k *ar = file->private_data;
++#ifndef CPTCFG_ATH11K_MEM_PROFILE_512M
++	struct ath11k_base *ab = ar->ab;
++#endif
+ 	struct ath11k_vif *arvif = NULL;
+ 	struct ath11k_mgmt_frame_stats *mgmt_stats;
+ 	int len = 0, ret, i;
+-	int size = (TARGET_NUM_VDEVS - 1) * 1500;
++	int size = (TARGET_NUM_VDEVS(ab) - 1) * 1500;
+ 	char *buf;
+ 	const char *mgmt_frm_type[ATH11K_STATS_MGMT_FRM_TYPE_MAX-1] = {"assoc_req", "assoc_resp",
+ 								       "reassoc_req", "reassoc_resp",
