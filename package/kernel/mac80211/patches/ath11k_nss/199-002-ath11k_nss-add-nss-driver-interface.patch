@@ -1365,7 +1365,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
 +
 +	peer = ath11k_peer_find_by_addr(ab, addr);
 +	if (!peer) {
-+		ath11k_warn(ab, "peer not found for nss peer delete\n");
++		ath11k_warn(ab, "peer (%pM) not found for nss peer delete\n", addr);
 +		spin_unlock_bh(&ab->base_lock);
 +		return -EINVAL;
 +	}
