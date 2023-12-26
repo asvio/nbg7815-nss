@@ -33,6 +33,8 @@ PKG_CONFIG_DEPENDS:= \
 	CONFIG_PACKAGE_MAC80211_DEBUGFS \
 	CONFIG_PACKAGE_MAC80211_MESH \
 	CONFIG_PACKAGE_MAC80211_TRACING \
+	CONFIG_PACKAGE_MAC80211_NSS_SUPPORT \
+	CONFIG_PACKAGE_MAC80211_NSS_REDIRECT \
 	CONFIG_PACKAGE_IWLWIFI_DEBUG \
 	CONFIG_PACKAGE_IWLWIFI_DEBUGFS \
 	CONFIG_PACKAGE_RTLWIFI_DEBUG \
@@ -131,8 +133,8 @@ define KernelPackage/mac80211
   KCONFIG:=\
 	CONFIG_AVERAGE=y
   FILES:= $(PKG_BUILD_DIR)/net/mac80211/mac80211.ko
-ifdef CONFIG_ATH11K_NSS_SUPPORT
-  AUTOLOAD:=$(call AutoProbe,mac80211)
+ifdef CONFIG_PACKAGE_MAC80211_NSS_REDIRECT
+  AUTOLOAD:=$(call AutoProbe, mac80211)
   MODPARAMS.mac80211:=nss_redirect=1
 endif
   ABI_VERSION:=$(PKG_VERSION)-$(PKG_RELEASE)
@@ -141,6 +143,21 @@ endef
 
 define KernelPackage/mac80211/config
   if PACKAGE_kmod-mac80211
+
+  if PACKAGE_kmod-qca-nss-drv
+		config PACKAGE_MAC80211_NSS_SUPPORT
+			bool "Enable NSS support"
+			default y
+			help
+				This option enables support for NSS in QCA boards.
+		config PACKAGE_MAC80211_NSS_REDIRECT
+			bool "Enable autoloading with 'nss_redirect=1' (not needed on ath11k)"
+			depends on PACKAGE_MAC80211_NSS_SUPPORT
+			default n
+			help
+				This option enables autoloading mac80211 with 'nss_redirect=1'.
+				However, it is not required for wifi offloading.
+  endif
 
 	config PACKAGE_MAC80211_DEBUGFS
 		bool "Export mac80211 internals in DebugFS"
@@ -287,6 +304,8 @@ ifdef CONFIG_ATH11K_NSS_SUPPORT
 	IREMAP_CFLAGS+=-I$(STAGING_DIR)/usr/include/qca-nss-drv
 endif
 
+config-$(CONFIG_PACKAGE_MAC80211_NSS_SUPPORT) += MAC80211_NSS_SUPPORT
+
 MAKE_OPTS:= \
 	$(subst -C $(LINUX_DIR),-C "$(PKG_BUILD_DIR)",$(KERNEL_MAKEOPTS)) \
 	EXTRA_CFLAGS="-I$(PKG_BUILD_DIR)/include $(IREMAP_CFLAGS) $(C_DEFINES)" \
@@ -399,6 +418,12 @@ define Build/InstallDev
 	rm -f $(1)/usr/include/mac80211-backport/linux/module.h
 endef
 
+ifdef CONFIG_ATH11K_NSS_SUPPORT
+define KernelPackage/ath11k/install
+	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_BIN) ./files/etc/init.d/qca-nss-pbuf $(1)/etc/init.d
+endef
+endif
 
 $(eval $(foreach drv,$(PKG_DRIVERS),$(call KernelPackage,$(drv))))
 $(eval $(call KernelPackage,cfg80211))
