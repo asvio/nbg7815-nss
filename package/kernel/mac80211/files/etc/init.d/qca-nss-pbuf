@@ -45,9 +45,9 @@ apply_nss_config() {
     # 512MB+ Boards
     *)
       #default settings
-      sysctl -w dev.nss.n2hcfg.extra_pbuf_core0=7800000 > /dev/null 2> /dev/null
-      sysctl -w dev.nss.n2hcfg.n2h_high_water_core0=60176 > /dev/null 2> /dev/null
-      sysctl -w dev.nss.n2hcfg.n2h_wifi_pool_buf=35840 > /dev/null 2> /dev/null
+      sysctl -w dev.nss.n2hcfg.extra_pbuf_core0=3100000 >/dev/null 2>/dev/null
+      sysctl -w dev.nss.n2hcfg.n2h_high_water_core0=30624 >/dev/null 2>/dev/null
+      sysctl -w dev.nss.n2hcfg.n2h_wifi_pool_buf=8192 >/dev/null 2>/dev/null
       ;;
   esac
 }
