@@ -53,7 +53,6 @@ apply_nss_config() {
 }
 
 start() {
-  if [ -d "/sys/kernel/debug/ath11k" ]; then
     enable_nss_offload=$(cat /sys/module/ath11k/parameters/nss_offload)
     if [ "$enable_nss_offload" -eq 1 ]; then
       /etc/init.d/qca-nss-ecm start
@@ -63,5 +62,4 @@ start() {
     if [ "$enable_nss_offload" -eq 0 ]; then
       /etc/init.d/qca-nss-ecm stop
     fi
-  fi
 }
