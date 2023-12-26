@@ -336,9 +336,10 @@ define KernelPackage/ath11k/config
 
          config ATH11K_MEM_PROFILE_512M
                bool "Use limits for the 512MB memory size"
-               default y if ATH11K_NSS_SUPPORT
+               default n
                help
-                  This allows selecting the ath11k memory size profile to be used.
+                  For IPQ devices with 512MB RAM (i.e. Xiaomi AX3600).
+                  Unselected is 1GB.
        endif
 endef
 
