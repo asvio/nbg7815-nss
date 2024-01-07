@@ -296,7 +296,7 @@ ifeq ($(BUILD_VARIANT),smallbuffers)
 endif
 
 ifdef CONFIG_ATH11K_NSS_SUPPORT
-	IREMAP_CFLAGS+=-I$(STAGING_DIR)/usr/include/qca-nss-drv
+	IREMAP_CFLAGS+=-I$(STAGING_DIR)/usr/include/qca-nss-drv -I$(STAGING_DIR)/usr/include/qca-nss-clients
 endif
 
 config-$(CONFIG_PACKAGE_MAC80211_NSS_SUPPORT) += MAC80211_NSS_SUPPORT
