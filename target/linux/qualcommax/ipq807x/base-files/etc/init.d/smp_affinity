@@ -18,6 +18,18 @@ enable_affinity_ipq807x(){
     set_affinity 'wbm2host-tx-completions-ring1' 2
     set_affinity 'wbm2host-tx-completions-ring2' 4
     set_affinity 'wbm2host-tx-completions-ring3' 8
+
+    # assign 3 tcl completions to last 3 CPUs
+    set_affinity 'ppdu-end-interrupts-mac1' 2
+    set_affinity 'ppdu-end-interrupts-mac2' 4
+    set_affinity 'ppdu-end-interrupts-mac3' 8
+
+    set_affinity 'nss_empty_buf_sos' 4
+    set_affinity 'nss_empty_buf_queue' 4
+
+    set_affinity 'xhci-hcd:usb1' 2
+
+    echo 8 > /proc/irq/50/smp_affinity
 }
 
 boot() {
