@@ -1,0 +1,56 @@
+--- a/src/adpt/adpt.c
++++ b/src/adpt/adpt.c
+@@ -399,11 +399,6 @@ sw_error_t adpt_init(a_uint32_t dev_id,
+ #endif
+ #endif
+ #if defined(HPPE)
+-#if defined(FALLTHROUGH)
+-			fallthrough;
+-#else
+-			/* fall through */
+-#endif
+		case CHIP_HPPE:
+			if (g_adpt_api[dev_id] == NULL) {
+				g_adpt_api[dev_id] = aos_mem_alloc(sizeof(adpt_api_t));
+--- a/src/fal/fal_port_ctrl.c
++++ b/src/fal/fal_port_ctrl.c
+@@ -2089,7 +2089,7 @@ fal_port_hibernate_get (a_uint32_t dev_i
+  */
+ sw_error_t
+ fal_port_cdt (a_uint32_t dev_id, fal_port_t port_id, a_uint32_t mdi_pair,
+-	      a_uint32_t * cable_status, a_uint32_t * cable_len)
++	      fal_cable_status_t * cable_status, a_uint32_t * cable_len)
+ {
+   sw_error_t rv;
+
+--- a/src/fal/fal_portvlan.c
++++ b/src/fal/fal_portvlan.c
+@@ -2173,7 +2173,7 @@ fal_netisolate_get(a_uint32_t dev_id, a_
+  * @return SW_OK or error code
+  */
+ sw_error_t
+-fal_eg_trans_filter_bypass_en_set(a_uint32_t dev_id, a_bool_t enable)
++fal_eg_trans_filter_bypass_en_set(a_uint32_t dev_id, a_uint32_t enable)
+ {
+     sw_error_t rv;
+
+@@ -2190,7 +2190,7 @@ fal_eg_trans_filter_bypass_en_set(a_uint
+  * @return SW_OK or error code
+  */
+ sw_error_t
+-fal_eg_trans_filter_bypass_en_get(a_uint32_t dev_id, a_bool_t* enable)
++fal_eg_trans_filter_bypass_en_get(a_uint32_t dev_id, a_uint32_t* enable)
+ {
+     sw_error_t rv;
+
+--- a/Makefile
++++ b/Makefile
+@@ -27,7 +27,7 @@ all: $(BIN_DIR) kslib
+ # 			LNX Modules-Style Makefile
+ ####################################################################
+ modules: $(BIN_DIR) kslib_c
+-	mkdir -p ./temp/;cp * ./temp -a;cd ./temp;cp ../Makefile.modules ./Makefile;
++	mkdir -p ./temp/;cp app config include ko_Makefile make Makefile.modules src ./temp -a;cd ./temp;cp ../Makefile.modules ./Makefile;
+	make -C $(SYS_PATH) M=$(PRJ_PATH)/temp $(LNX_MAKEOPTS) modules
+	cp $(PRJ_PATH)/temp/Module.symvers $(PRJ_PATH)/Module.symvers;
+	cp temp/*.ko build/bin;
