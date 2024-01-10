@@ -28,6 +28,8 @@ apply_sysctl() {
     logger -t ath11k_nss "Sysctl key 'extra_pbuf_core0' already set to '"$extra_pbuf_core0"'. Skipping applying wifi nss configs"
   fi
 
+  sysctl -w dev.nss.n2hcfg.n2h_high_water_core0=$n2h_high_water_core0 > /dev/null 2>/dev/null
+
   logger -t ath11k_nss "$board - setting dev.nss.n2hcfg.n2h_wifi_pool_buf=$n2h_wifi_pool_buf"
   sysctl -w dev.nss.n2hcfg.n2h_wifi_pool_buf=$n2h_wifi_pool_buf
 
