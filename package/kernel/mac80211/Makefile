@@ -424,8 +424,9 @@ endef
 
 ifdef CONFIG_ATH11K_NSS_SUPPORT
 define KernelPackage/ath11k/install
-	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_DIR) $(1)/etc/init.d $(1)/etc/config
 	$(INSTALL_BIN) ./files/etc/init.d/qca-nss-pbuf $(1)/etc/init.d
+	$(INSTALL_BIN) ./files/pbuf.uci $(1)/etc/config/pbuf
 endef
 endif
 
