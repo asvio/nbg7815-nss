@@ -720,13 +720,9 @@
  		.hal_params = &ath11k_hw_hal_params_ipq8074,
  		.supports_dynamic_smps_6ghz = false,
  		.alloc_cacheable_memory = true,
-@@ -347,10 +368,10 @@ static struct ath11k_hw_params ath11k_hw
- 		.supports_shadow_regs = false,
- 		.idle_ps = false,
- 		.supports_sta_ps = false,
--		.coldboot_cal_mm = false,
-+		.coldboot_cal_mm = true,
- 		.coldboot_cal_ftm = true,
+@@ -350,7 +371,7 @@ static struct ath11k_hw_params ath11k_hw
+ 		.coldboot_cal_mm = false,
+ 		.coldboot_cal_ftm = false,
  		.cbcal_restart_fw = true,
 -		.fw_mem_mode = 2,
 +		.fw_mem_mode = ATH11K_QMI_TARGET_MEM_MODE,
