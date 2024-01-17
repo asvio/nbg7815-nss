@@ -1173,7 +1173,7 @@ Signed-off-by: Gautham Kumar Senthilkumaran <quic_gauthamk@quicinc.com>
  void mesh_pathtbl_unregister(struct ieee80211_sub_if_data *sdata)
 --- a/net/mac80211/tx.c
 +++ b/net/mac80211/tx.c
-@@ -2633,6 +2633,9 @@ static struct sk_buff *ieee80211_build_h
+@@ -2621,6 +2621,9 @@ static struct sk_buff *ieee80211_build_h
  		info_flags |= IEEE80211_TX_CTL_REQ_TX_STATUS;
  #endif
  
@@ -1183,7 +1183,7 @@ Signed-off-by: Gautham Kumar Senthilkumaran <quic_gauthamk@quicinc.com>
  	/* convert Ethernet header to proper 802.11 header (based on
  	 * operation mode) */
  	ethertype = (skb->data[12] << 8) | skb->data[13];
-@@ -2703,6 +2706,13 @@ static struct sk_buff *ieee80211_build_h
+@@ -2691,6 +2694,13 @@ static struct sk_buff *ieee80211_build_h
  		break;
  #ifdef CPTCFG_MAC80211_MESH
  	case NL80211_IFTYPE_MESH_POINT:
@@ -1197,7 +1197,7 @@ Signed-off-by: Gautham Kumar Senthilkumaran <quic_gauthamk@quicinc.com>
  		if (!is_multicast_ether_addr(skb->data)) {
  			struct sta_info *next_hop;
  			bool mpp_lookup = true;
-@@ -2966,10 +2976,10 @@ static struct sk_buff *ieee80211_build_h
+@@ -2954,10 +2964,10 @@ static struct sk_buff *ieee80211_build_h
  
  	skb_reset_mac_header(skb);
  
@@ -1212,7 +1212,7 @@ Signed-off-by: Gautham Kumar Senthilkumaran <quic_gauthamk@quicinc.com>
  	info->ack_frame_id = info_id;
  	info->band = band;
  
-@@ -4284,6 +4294,7 @@ void __ieee80211_subif_start_xmit(struct
+@@ -4272,6 +4282,7 @@ void __ieee80211_subif_start_xmit(struct
  	struct sk_buff *next;
  	int len = skb->len;
  	struct ieee80211_key *key = NULL;
@@ -1220,20 +1220,20 @@ Signed-off-by: Gautham Kumar Senthilkumaran <quic_gauthamk@quicinc.com>
  	struct ieee80211_sub_if_data *ap_sdata;
  
  	if (unlikely(!ieee80211_sdata_running(sdata) || skb->len < ETH_HLEN)) {
-@@ -4358,9 +4369,15 @@ void __ieee80211_subif_start_xmit(struct
+@@ -4346,9 +4357,15 @@ void __ieee80211_subif_start_xmit(struct
  			goto out;
  		}
  
--		ieee80211_tx_stats(dev, skb->len);
+-		dev_sw_netstats_tx_add(dev, 1, skb->len);
 -
 -		ieee80211_xmit(sdata, sta, skb);
 +		info = IEEE80211_SKB_CB(skb);
 +		if (info->flags & IEEE80211_TX_CTL_HW_80211_ENCAP) {
-+		    	if (sta)
++			if (sta)
 +				key = rcu_dereference(sta->ptk[sta->ptk_idx]);
 +			ieee80211_8023_xmit(sdata, dev, sta, key, skb);
 +		} else {
-+			ieee80211_tx_stats(dev, skb->len);
++			dev_sw_netstats_tx_add(dev, 1, skb->len);
 +			ieee80211_xmit(sdata, sta, skb);
 +		}
  	}
