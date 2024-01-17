@@ -138,7 +138,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  #endif
 --- a/local-symbols
 +++ b/local-symbols
-@@ -171,12 +171,13 @@ ATH11K=
+@@ -171,6 +171,8 @@ ATH11K=
  ATH11K_AHB=
  ATH11K_PCI=
  ATH11K_NSS_SUPPORT=
@@ -147,12 +147,6 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  ATH11K_DEBUG=
  ATH11K_DEBUGFS=
  ATH11K_TRACING=
- ATH11K_SPECTRAL=
- ATH11K_THERMAL=
--ATH11K_MEM_PROFILE_512M=
- ATH12K=
- ATH12K_DEBUG=
- ATH12K_TRACING=
 --- a/drivers/net/wireless/ath/ath11k/core.h
 +++ b/drivers/net/wireless/ath/ath11k/core.h
 @@ -863,6 +863,11 @@ struct ath11k_msi_config {
