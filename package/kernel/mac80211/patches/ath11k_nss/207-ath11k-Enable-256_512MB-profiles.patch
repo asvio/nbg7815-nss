@@ -276,17 +276,16 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  		.hal_params = &ath11k_hw_hal_params_ipq8074,
  		.supports_dynamic_smps_6ghz = false,
  		.alloc_cacheable_memory = true,
-@@ -127,7 +131,9 @@ static struct ath11k_hw_params ath11k_hw
+@@ -127,6 +131,9 @@ static struct ath11k_hw_params ath11k_hw
  		.tcl_ring_retry = true,
  		.tx_ring_size = DP_TCL_DATA_RING_SIZE,
  		.smp2p_wow_exit = false,
--	},
 +		/* In addition to TCL ring use TCL_CMD ring also for tx */
 +		.max_tx_ring = DP_TCL_NUM_RING_MAX + 1,
 +		.num_vdevs_peers = ath11k_vdevs_peers,
+ 	},
  	{
  		.hw_rev = ATH11K_HW_IPQ6018_HW10,
- 		.name = "ipq6018 hw1.0",
 @@ -177,7 +183,7 @@ static struct ath11k_hw_params ath11k_hw
  		.coldboot_cal_mm = true,
  		.coldboot_cal_ftm = true,
