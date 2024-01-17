@@ -26,7 +26,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
 
 --- a/drivers/net/wireless/ath/ath11k/core.h
 +++ b/drivers/net/wireless/ath/ath11k/core.h
-@@ -634,6 +634,7 @@ struct ath11k {
+@@ -635,6 +635,7 @@ struct ath11k {
  	struct ath11k_pdev_wmi *wmi;
  #ifdef CPTCFG_ATH11K_NSS_SUPPORT
  	struct ath11k_nss nss;
@@ -34,7 +34,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  #endif
  	struct ath11k_pdev_dp dp;
  	u8 mac_addr[ETH_ALEN];
-@@ -1042,6 +1043,8 @@ struct ath11k_base {
+@@ -1043,6 +1044,8 @@ struct ath11k_base {
  	u32 rx_hash;
  	bool stats_disable;
  
@@ -110,7 +110,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  		break;
 --- a/drivers/net/wireless/ath/ath11k/dp_tx.c
 +++ b/drivers/net/wireless/ath/ath11k/dp_tx.c
-@@ -431,7 +431,7 @@ ath11k_dp_tx_process_htt_tx_complete(str
+@@ -477,7 +477,7 @@ ath11k_dp_tx_process_htt_tx_complete(str
  		break;
  	case HAL_WBM_REL_HTT_TX_COMP_STATUS_MEC_NOTIFY:
  		/* This event is to be handled only when the driver decides to

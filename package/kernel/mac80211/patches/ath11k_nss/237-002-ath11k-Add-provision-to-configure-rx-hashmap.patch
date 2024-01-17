@@ -33,7 +33,7 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
  enum ath11k_supported_bw {
  	ATH11K_BW_20	= 0,
  	ATH11K_BW_40	= 1,
-@@ -1037,6 +1038,8 @@ struct ath11k_base {
+@@ -1038,6 +1039,8 @@ struct ath11k_base {
  	atomic_t num_max_allowed;
  	struct ath11k_num_vdevs_peers *num_vdevs_peers;
  

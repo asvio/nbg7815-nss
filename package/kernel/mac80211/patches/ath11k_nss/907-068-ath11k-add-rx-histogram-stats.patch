@@ -214,7 +214,7 @@ Signed-off-by: Manikanta Pubbisetty <mpubbise@codeaurora.org>
  			 rx_stats->dcm_count, rx_stats->ru_alloc_cnt[0],
 --- a/drivers/net/wireless/ath/ath11k/dp_rx.c
 +++ b/drivers/net/wireless/ath/ath11k/dp_rx.c
-@@ -3400,10 +3400,43 @@ exit:
+@@ -3233,10 +3233,43 @@ exit:
  	return total_msdu_reaped;
  }
  
@@ -258,7 +258,7 @@ Signed-off-by: Manikanta Pubbisetty <mpubbise@codeaurora.org>
  	u32 num_msdu;
  	int i;
  
-@@ -3413,6 +3446,8 @@ static void ath11k_dp_rx_update_peer_sta
+@@ -3246,6 +3279,8 @@ static void ath11k_dp_rx_update_peer_sta
  	arsta->rssi_comb = ppdu_info->rssi_comb;
  	ewma_avg_rssi_add(&arsta->avg_rssi, ppdu_info->rssi_comb);
  
@@ -267,7 +267,7 @@ Signed-off-by: Manikanta Pubbisetty <mpubbise@codeaurora.org>
  	num_msdu = ppdu_info->tcp_msdu_count + ppdu_info->tcp_ack_msdu_count +
  		   ppdu_info->udp_msdu_count + ppdu_info->other_msdu_count;
  
-@@ -3429,18 +3464,6 @@ static void ath11k_dp_rx_update_peer_sta
+@@ -3262,18 +3297,6 @@ static void ath11k_dp_rx_update_peer_sta
  		ppdu_info->tid = IEEE80211_NUM_TIDS;
  	}
  
@@ -286,7 +286,7 @@ Signed-off-by: Manikanta Pubbisetty <mpubbise@codeaurora.org>
  	if (ppdu_info->ldpc < HAL_RX_SU_MU_CODING_MAX)
  		rx_stats->coding_count[ppdu_info->ldpc] += num_msdu;
  
-@@ -3469,8 +3492,6 @@ static void ath11k_dp_rx_update_peer_sta
+@@ -3302,8 +3325,6 @@ static void ath11k_dp_rx_update_peer_sta
  	rx_stats->dcm_count += ppdu_info->dcm;
  	rx_stats->ru_alloc_cnt[ppdu_info->ru_alloc] += num_msdu;
  
@@ -295,7 +295,7 @@ Signed-off-by: Manikanta Pubbisetty <mpubbise@codeaurora.org>
  	BUILD_BUG_ON(ARRAY_SIZE(arsta->chain_signal) >
  			     ARRAY_SIZE(ppdu_info->rssi_chain_pri20));
  
-@@ -3479,6 +3500,52 @@ static void ath11k_dp_rx_update_peer_sta
+@@ -3312,6 +3333,52 @@ static void ath11k_dp_rx_update_peer_sta
  
  	rx_stats->rx_duration += ppdu_info->rx_duration;
  	arsta->rx_duration = rx_stats->rx_duration;
@@ -598,7 +598,7 @@ Signed-off-by: Manikanta Pubbisetty <mpubbise@codeaurora.org>
  #define ATH11K_TX_RING_MASK_0 BIT(0)
 --- a/drivers/net/wireless/ath/ath11k/hw.h
 +++ b/drivers/net/wireless/ath/ath11k/hw.h
-@@ -315,6 +315,7 @@ struct ath11k_hw_ops {
+@@ -313,6 +313,7 @@ struct ath11k_hw_ops {
  	bool (*rx_desc_mac_addr2_valid)(struct hal_rx_desc *desc);
  	u8* (*rx_desc_mpdu_start_addr2)(struct hal_rx_desc *desc);
  	u32 (*get_ring_selector)(struct sk_buff *skb);

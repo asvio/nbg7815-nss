@@ -1220,7 +1220,7 @@ Signed-off-by: Gautham Kumar Senthilkumaran <quic_gauthamk@quicinc.com>
  	struct ieee80211_sub_if_data *ap_sdata;
  
  	if (unlikely(!ieee80211_sdata_running(sdata) || skb->len < ETH_HLEN)) {
-@@ -4359,9 +4370,15 @@ void __ieee80211_subif_start_xmit(struct
+@@ -4358,9 +4369,15 @@ void __ieee80211_subif_start_xmit(struct
  			goto out;
  		}
  

@@ -464,7 +464,7 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
  			     ath11k_mac_vif_unref, vif);
 --- a/drivers/net/wireless/ath/ath11k/debugfs.c
 +++ b/drivers/net/wireless/ath/ath11k/debugfs.c
-@@ -833,10 +833,22 @@ static ssize_t ath11k_debugfs_dump_soc_d
+@@ -835,10 +835,22 @@ static ssize_t ath11k_debugfs_dump_soc_d
  		len += scnprintf(buf + len, size - len, "ring%d: %u\n",
  				 i, soc_stats->tx_err.desc_na[i]);
  
@@ -506,7 +506,7 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
  	},
  	{
  		.name = "qca6390 hw2.0",
-@@ -384,6 +384,8 @@ static struct ath11k_hw_params ath11k_hw
+@@ -384,6 +385,8 @@ static struct ath11k_hw_params ath11k_hw
  		.tx_ring_size = DP_TCL_DATA_RING_SIZE,
  		.smp2p_wow_exit = false,
  		.support_fw_mac_sequence = false,
@@ -515,7 +515,7 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
  	},
  	{
  		.name = "wcn6855 hw2.0",
-@@ -2147,6 +2149,9 @@ int ath11k_core_pre_init(struct ath11k_b
+@@ -2147,6 +2150,9 @@ int ath11k_core_pre_init(struct ath11k_b
  
  	ab->enable_memory_stats = ATH11K_DEBUG_ENABLE_MEMORY_STATS;
  

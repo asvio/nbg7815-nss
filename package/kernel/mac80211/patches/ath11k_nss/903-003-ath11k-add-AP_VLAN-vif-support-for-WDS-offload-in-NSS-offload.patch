@@ -33,7 +33,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
 
 --- a/drivers/net/wireless/ath/ath11k/core.h
 +++ b/drivers/net/wireless/ath/ath11k/core.h
-@@ -385,9 +385,8 @@ struct ath11k_vif {
+@@ -387,9 +387,8 @@ struct ath11k_vif {
  #endif /* CPTCFG_ATH11K_DEBUGFS */
  
  	struct ath11k_mgmt_frame_stats mgmt_stats;
@@ -184,7 +184,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  }
  
  static int ath11k_mac_inc_num_stations(struct ath11k_vif *arvif,
-@@ -5278,9 +5379,32 @@ static void ath11k_mac_op_sta_set_4addr(
+@@ -5314,9 +5415,32 @@ static void ath11k_mac_op_sta_set_4addr(
  					struct ieee80211_sta *sta, bool enabled)
  {
  	struct ath11k *ar = hw->priv;
@@ -217,7 +217,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  		ieee80211_queue_work(ar->hw, &arsta->set_4addr_wk);
  		arsta->use_4addr_set = true;
  	}
-@@ -6673,6 +6797,9 @@ static int ath11k_mac_op_update_vif_offl
+@@ -6708,6 +6832,9 @@ static int ath11k_mac_op_update_vif_offl
  	u32 param_id, param_value;
  	int ret;
  
@@ -227,7 +227,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  	param_id = WMI_VDEV_PARAM_TX_ENCAP_TYPE;
  	if (ath11k_frame_mode != ATH11K_HW_TXRX_ETHERNET ||
  	    (vif->type != NL80211_IFTYPE_STATION &&
-@@ -6893,7 +7020,8 @@ static int ath11k_mac_op_add_interface(s
+@@ -6928,7 +7055,8 @@ static int ath11k_mac_op_add_interface(s
  		goto err;
  	}
  
@@ -237,7 +237,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  		ath11k_warn(ab, "failed to create vdev %u, reached max vdev limit %d\n",
  			    ar->num_created_vdevs, TARGET_NUM_VDEVS(ab));
  		ret = -EBUSY;
-@@ -6913,6 +7041,28 @@ static int ath11k_mac_op_add_interface(s
+@@ -6948,6 +7076,28 @@ static int ath11k_mac_op_add_interface(s
  	arvif->vif = vif;
  
  	INIT_LIST_HEAD(&arvif->list);
@@ -266,7 +266,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  	INIT_DELAYED_WORK(&arvif->connection_loss_work,
  			  ath11k_mac_vif_sta_connection_loss_work);
  
-@@ -6942,6 +7092,7 @@ static int ath11k_mac_op_add_interface(s
+@@ -6977,6 +7127,7 @@ static int ath11k_mac_op_add_interface(s
  		fallthrough;
  	case NL80211_IFTYPE_AP:
  		arvif->vdev_type = WMI_VDEV_TYPE_AP;
@@ -274,7 +274,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  		break;
  	case NL80211_IFTYPE_MONITOR:
  		arvif->vdev_type = WMI_VDEV_TYPE_MONITOR;
-@@ -7164,13 +7315,30 @@ static void ath11k_mac_op_remove_interfa
+@@ -7202,13 +7353,30 @@ static void ath11k_mac_op_remove_interfa
  	struct ath11k *ar = hw->priv;
  	struct ath11k_vif *arvif = ath11k_vif_to_arvif(vif);
  	struct ath11k_base *ab = ar->ab;
@@ -307,7 +307,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  	ath11k_dbg(ab, ATH11K_DBG_MAC, "remove interface (vdev %d)\n",
  		   arvif->vdev_id);
  
-@@ -7187,6 +7355,14 @@ static void ath11k_mac_op_remove_interfa
+@@ -7225,6 +7393,14 @@ static void ath11k_mac_op_remove_interfa
  		if (ret)
  			ath11k_warn(ab, "failed to submit AP self-peer removal on vdev %d: %d\n",
  				    arvif->vdev_id, ret);
@@ -322,7 +322,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  	}
  
  	ret = ath11k_mac_vdev_delete(ar, arvif);
-@@ -7230,8 +7406,7 @@ err_vdev_del:
+@@ -7269,8 +7445,7 @@ err_vdev_del:
  
  	ath11k_debugfs_remove_interface(arvif);
  
@@ -332,7 +332,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  	mutex_unlock(&ar->conf_mutex);
  }
  
-@@ -7291,16 +7466,17 @@ static int ath11k_mac_op_ampdu_action(st
+@@ -7330,16 +7505,17 @@ static int ath11k_mac_op_ampdu_action(st
  				      struct ieee80211_ampdu_params *params)
  {
  	struct ath11k *ar = hw->priv;
@@ -352,7 +352,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  		break;
  	case IEEE80211_AMPDU_TX_START:
  	case IEEE80211_AMPDU_TX_STOP_CONT:
-@@ -8823,6 +8999,7 @@ static void ath11k_mac_op_sta_statistics
+@@ -8862,6 +9038,7 @@ static void ath11k_mac_op_sta_statistics
  {
  	struct ath11k_sta *arsta = ath11k_sta_to_arsta(sta);
  	struct ath11k *ar = arsta->arvif->ar;
@@ -360,7 +360,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  	s8 signal;
  	bool db2dbm = test_bit(WMI_TLV_SERVICE_HW_DB2DBM_CONVERSION_SUPPORT,
  			       ar->ab->wmi_ab.svc_map);
-@@ -8879,7 +9056,8 @@ static void ath11k_mac_op_sta_statistics
+@@ -8918,7 +9095,8 @@ static void ath11k_mac_op_sta_statistics
  		ATH11K_DEFAULT_NOISE_FLOOR;
  	sinfo->filled |= BIT_ULL(NL80211_STA_INFO_SIGNAL_AVG);
  
@@ -372,7 +372,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  #if IS_ENABLED(CONFIG_IPV6)
 --- a/drivers/net/wireless/ath/ath11k/wmi.h
 +++ b/drivers/net/wireless/ath/ath11k/wmi.h
-@@ -5069,6 +5069,8 @@ enum wmi_vdev_subtype {
+@@ -5075,6 +5075,8 @@ enum wmi_vdev_subtype {
  	WMI_VDEV_SUBTYPE_MESH_11S,
  };
  
@@ -521,7 +521,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  				      u8* mac_addr, enum ath11k_ast_entry_type type)
 --- a/drivers/net/wireless/ath/ath11k/nss.c
 +++ b/drivers/net/wireless/ath/ath11k/nss.c
-@@ -164,7 +164,10 @@ static void ath11k_nss_get_peer_stats(st
+@@ -162,7 +162,10 @@ static void ath11k_nss_get_peer_stats(st
  
  		peer->nss.nss_stats->tx_failed += tx_dropped;
  
@@ -533,7 +533,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  
  		rx_packets = pstats->rx.rx_recvd;
  		peer->nss.nss_stats->rx_packets += rx_packets;
-@@ -174,7 +177,10 @@ static void ath11k_nss_get_peer_stats(st
+@@ -172,7 +175,10 @@ static void ath11k_nss_get_peer_stats(st
  			pstats->rx.err.decrypt_err;
  		peer->nss.nss_stats->rx_dropped += rx_dropped;
  
@@ -545,7 +545,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  
  		spin_unlock_bh(&ab->base_lock);
  		rcu_read_unlock();
-@@ -1040,6 +1046,9 @@ int ath11k_nss_vdev_set_cmd(struct ath11
+@@ -1038,6 +1044,9 @@ int ath11k_nss_vdev_set_cmd(struct ath11
  	case ATH11K_NSS_WIFI_VDEV_DECAP_TYPE_CMD:
  		cmd = NSS_WIFI_VDEV_DECAP_TYPE_CMD;
  		break;
