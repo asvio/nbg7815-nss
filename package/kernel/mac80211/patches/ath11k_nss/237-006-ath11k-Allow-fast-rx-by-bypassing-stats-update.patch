@@ -23,7 +23,7 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
 
 --- a/drivers/net/wireless/ath/ath11k/core.h
 +++ b/drivers/net/wireless/ath/ath11k/core.h
-@@ -135,6 +135,7 @@ struct ath11k_skb_rxcb {
+@@ -136,6 +136,7 @@ struct ath11k_skb_rxcb {
  	u8 tid;
  	u16 peer_id;
  	u16 seq_no;
@@ -31,7 +31,7 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
  };
  
  enum ath11k_hw_rev {
-@@ -1039,6 +1040,7 @@ struct ath11k_base {
+@@ -1040,6 +1041,7 @@ struct ath11k_base {
  	struct ath11k_num_vdevs_peers *num_vdevs_peers;
  
  	u32 rx_hash;

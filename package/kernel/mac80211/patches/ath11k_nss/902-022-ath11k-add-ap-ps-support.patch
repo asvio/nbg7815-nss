@@ -88,7 +88,7 @@
  
  		kfree(arsta->rx_stats);
  		arsta->rx_stats = NULL;
-@@ -6566,6 +6602,7 @@ static void ath11k_mac_op_stop(struct ie
+@@ -6564,6 +6600,7 @@ static void ath11k_mac_op_stop(struct ie
  
  	clear_bit(ATH11K_CAC_RUNNING, &ar->dev_flags);
  	ar->state = ATH11K_STATE_OFF;
@@ -96,7 +96,7 @@
  	mutex_unlock(&ar->conf_mutex);
  
  	cancel_delayed_work_sync(&ar->scan.timeout);
-@@ -6973,7 +7010,6 @@ static int ath11k_mac_op_add_interface(s
+@@ -6971,7 +7008,6 @@ static int ath11k_mac_op_add_interface(s
  			    arvif->vdev_id, ret);
  		goto err;
  	}
@@ -104,7 +104,7 @@
  	ar->num_created_vdevs++;
  	ath11k_dbg(ab, ATH11K_DBG_MAC, "vdev %pM created, vdev_id %d\n",
  		   vif->addr, arvif->vdev_id);
-@@ -7120,6 +7156,10 @@ static int ath11k_mac_op_add_interface(s
+@@ -7118,6 +7154,10 @@ static int ath11k_mac_op_add_interface(s
  				    ret);
  	}
  
@@ -115,7 +115,7 @@
  	mutex_unlock(&ar->conf_mutex);
  
  	return 0;
-@@ -7227,6 +7267,7 @@ err_vdev_del:
+@@ -7225,6 +7265,7 @@ err_vdev_del:
  
  	/* Recalc txpower for remaining vdev */
  	ath11k_mac_txpower_recalc(ar);

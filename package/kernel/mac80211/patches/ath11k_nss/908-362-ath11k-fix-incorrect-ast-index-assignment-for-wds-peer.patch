@@ -19,7 +19,7 @@ Signed-off-by: Raj Kumar Bhagat <quic_rajkbhag@quicinc.com>
 
 --- a/drivers/net/wireless/ath/ath11k/nss.c
 +++ b/drivers/net/wireless/ath/ath11k/nss.c
-@@ -805,8 +805,6 @@ ath11k_nss_vdev_special_data_receive(str
+@@ -803,8 +803,6 @@ ath11k_nss_vdev_special_data_receive(str
  	struct nss_wifi_vdev_per_packet_metadata *wifi_metadata = NULL;
  	struct nss_wifi_vdev_wds_per_packet_metadata *wds_metadata = NULL;
  	struct nss_wifi_vdev_addr4_data_metadata *addr4_metadata = NULL;
@@ -28,7 +28,7 @@ Signed-off-by: Raj Kumar Bhagat <quic_rajkbhag@quicinc.com>
  	struct ath11k_vif *arvif;
  	struct ath11k_base *ab;
  	struct ath11k_skb_rxcb *rxcb;
-@@ -2487,13 +2485,14 @@ msg_free:
+@@ -2485,13 +2483,14 @@ msg_free:
  }
  
  int ath11k_nss_map_wds_peer(struct ath11k *ar, struct ath11k_peer *peer,
@@ -44,7 +44,7 @@ Signed-off-by: Raj Kumar Bhagat <quic_rajkbhag@quicinc.com>
  	int ret = 0;
  
  	wlmsg = kzalloc(sizeof(struct nss_wifili_msg), GFP_ATOMIC);
-@@ -2503,7 +2502,7 @@ int ath11k_nss_map_wds_peer(struct ath11
+@@ -2501,7 +2500,7 @@ int ath11k_nss_map_wds_peer(struct ath11
  	wds_peer_map_msg = &wlmsg->msg.wdspeermapmsg;
  
  	wds_peer_map_msg->vdev_id = peer->vdev_id;

@@ -17,7 +17,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
 
 --- a/drivers/net/wireless/ath/ath11k/nss.c
 +++ b/drivers/net/wireless/ath/ath11k/nss.c
-@@ -366,6 +366,10 @@ void ath11k_nss_wifili_event_receive(str
+@@ -364,6 +364,10 @@ void ath11k_nss_wifili_event_receive(str
  		ath11k_dbg(ab, ATH11K_DBG_NSS_WDS, "nss wifili wds peer del event received %d response %d error %d\n",
  			   msg_type, response, error);
  		break;
@@ -28,7 +28,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  	default:
  		ath11k_dbg(ab, ATH11K_DBG_NSS, "unhandled event %d\n", msg_type);
  		break;
-@@ -599,8 +603,9 @@ static int ath11k_nss_undecap_nwifi(stru
+@@ -597,8 +601,9 @@ static int ath11k_nss_undecap_nwifi(stru
  	return 0;
  }
  
@@ -40,7 +40,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  {
  	struct ath11k_base *ab = ar->ab;
  	struct ath11k_ast_entry *ast_entry = NULL;
-@@ -622,19 +627,22 @@ static void ath11k_nss_wds_type_rx(struc
+@@ -620,19 +625,22 @@ static void ath11k_nss_wds_type_rx(struc
  		if (!is_sa_valid) {
  			ath11k_peer_add_ast(ar, ta_peer, src_mac,
  					    ATH11K_AST_TYPE_WDS);
@@ -68,7 +68,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  	}
  
  	spin_unlock_bh(&ab->base_lock);
-@@ -678,7 +686,8 @@ static void ath11k_nss_mec_handler(struc
+@@ -676,7 +684,8 @@ static void ath11k_nss_mec_handler(struc
  
  static void ath11k_nss_vdev_spl_receive_ext_wdsdata(struct ath11k_vif *arvif,
  						    struct sk_buff *skb,
@@ -78,7 +78,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  {
  	struct ath11k *ar = arvif->ar;
  	struct ath11k_base *ab = ar->ab;
-@@ -699,8 +708,8 @@ static void ath11k_nss_vdev_spl_receive_
+@@ -697,8 +706,8 @@ static void ath11k_nss_vdev_spl_receive_
  
  	switch (wds_type) {
  		case NSS_WIFI_VDEV_WDS_TYPE_RX:
@@ -89,7 +89,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  			break;
  		case NSS_WIFI_VDEV_WDS_TYPE_MEC:
  			ath11k_nss_mec_handler(ar, (u8 *)(skb->data));
-@@ -767,6 +776,7 @@ ath11k_nss_vdev_special_data_receive(str
+@@ -765,6 +774,7 @@ ath11k_nss_vdev_special_data_receive(str
  	struct ieee80211_vif *vif;
  	struct ath11k_vif *arvif;
  	struct ath11k_base *ab;
@@ -97,7 +97,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  	bool eth_decap = false;
  	int data_offs = 0;
  	int ret = 0;
-@@ -822,10 +832,11 @@ ath11k_nss_vdev_special_data_receive(str
+@@ -820,10 +830,11 @@ ath11k_nss_vdev_special_data_receive(str
  	    NSS_WIFI_VDEV_EXT_DATA_PKT_TYPE_WDS_LEARN) {
  		wds_metadata = &wifi_metadata->metadata.wds_metadata;
  		ath11k_nss_vdev_spl_receive_ext_wdsdata(arvif, skb,
@@ -111,7 +111,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  }
  
  static void
-@@ -888,6 +899,68 @@ ath11k_nss_vdev_data_receive(struct net_
+@@ -886,6 +897,68 @@ ath11k_nss_vdev_data_receive(struct net_
  	ath11k_nss_deliver_rx(arvif->vif, skb, eth_decap, data_offs, napi);
  }
  
@@ -180,7 +180,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  int ath11k_nss_tx(struct ath11k_vif *arvif, struct sk_buff *skb)
  {
  	struct ath11k *ar = arvif->ar;
-@@ -910,10 +983,16 @@ int ath11k_nss_tx(struct ath11k_vif *arv
+@@ -908,10 +981,16 @@ int ath11k_nss_tx(struct ath11k_vif *arv
  		ath11k_nss_tx_encap_nwifi(skb);
  
  send:
@@ -201,7 +201,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  
  	if (status != NSS_TX_SUCCESS) {
  		ath11k_dbg(ar->ab, (ATH11K_DBG_NSS | ATH11K_DBG_DP_TX),
-@@ -1254,6 +1333,7 @@ int ath11k_nss_vdev_up(struct ath11k_vif
+@@ -1252,6 +1331,7 @@ int ath11k_nss_vdev_up(struct ath11k_vif
  	struct nss_wifi_vdev_msg *vdev_msg = NULL;
  	struct nss_wifi_vdev_enable_msg *vdev_en;
  	struct ath11k *ar = arvif->ar;
@@ -209,7 +209,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  	nss_tx_status_t status;
  	int ret = 0;
  
-@@ -1285,6 +1365,12 @@ int ath11k_nss_vdev_up(struct ath11k_vif
+@@ -1283,6 +1363,12 @@ int ath11k_nss_vdev_up(struct ath11k_vif
  	}
  
  	ath11k_dbg(ar->ab, ATH11K_DBG_NSS, "nss vdev up tx msg success\n");
@@ -222,7 +222,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  free:
  	kfree(vdev_msg);
  	return ret;
-@@ -1294,6 +1380,7 @@ int ath11k_nss_vdev_down(struct ath11k_v
+@@ -1292,6 +1378,7 @@ int ath11k_nss_vdev_down(struct ath11k_v
  {
  	struct nss_wifi_vdev_msg *vdev_msg = NULL;
  	struct ath11k *ar = arvif->ar;
@@ -230,7 +230,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  	nss_tx_status_t status;
  	int ret = 0;
  
-@@ -1321,11 +1408,362 @@ int ath11k_nss_vdev_down(struct ath11k_v
+@@ -1319,11 +1406,362 @@ int ath11k_nss_vdev_down(struct ath11k_v
  	}
  
  	ath11k_dbg(ar->ab, ATH11K_DBG_NSS, "nss vdev down tx msg success\n");
@@ -593,7 +593,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  /*----------------------------Peer Setup/Config -----------------------------*/
  
  int ath11k_nss_set_peer_sec_type(struct ath11k *ar,
-@@ -1419,22 +1857,22 @@ free:
+@@ -1417,22 +1855,22 @@ free:
  	return status;
  }
  
@@ -623,7 +623,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  					sta->addr);
  		goto exit;
  	}
-@@ -1506,13 +1944,13 @@ void ath11k_nss_update_sta_rxrate(struct
+@@ -1504,13 +1942,13 @@ void ath11k_nss_update_sta_rxrate(struct
  				  struct ath11k_peer *peer,
  				  struct hal_rx_user_status *user_stats)
  {
@@ -639,7 +639,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  	struct ath11k_base *ab = ar->ab;
  
  	if (!ab->nss.enabled)
-@@ -1816,8 +2254,8 @@ int ath11k_nss_add_wds_peer(struct ath11
+@@ -1814,8 +2252,8 @@ int ath11k_nss_add_wds_peer(struct ath11
  	}
  
  	ath11k_dbg(ab, ATH11K_DBG_NSS_WDS,
@@ -650,7 +650,7 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  
  msg_free:
  	kfree(wlmsg);
-@@ -1862,8 +2300,8 @@ int ath11k_nss_update_wds_peer(struct at
+@@ -1860,8 +2298,8 @@ int ath11k_nss_update_wds_peer(struct at
  	}
  
  	ath11k_dbg(ab, ATH11K_DBG_NSS_WDS,
