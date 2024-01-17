@@ -34,7 +34,7 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
  };
  
  struct ath11k_skb_cb {
-@@ -920,7 +921,12 @@ struct ath11k_soc_dp_tx_err_stats {
+@@ -919,7 +920,12 @@ struct ath11k_soc_dp_tx_err_stats {
  	/* Other failures during dp_tx due to mem allocation failure
  	 * idr unavailable etc.
  	 */
@@ -464,7 +464,7 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
  			     ath11k_mac_vif_unref, vif);
 --- a/drivers/net/wireless/ath/ath11k/debugfs.c
 +++ b/drivers/net/wireless/ath/ath11k/debugfs.c
-@@ -835,10 +835,22 @@ static ssize_t ath11k_debugfs_dump_soc_d
+@@ -833,10 +833,22 @@ static ssize_t ath11k_debugfs_dump_soc_d
  		len += scnprintf(buf + len, size - len, "ring%d: %u\n",
  				 i, soc_stats->tx_err.desc_na[i]);
  
@@ -489,7 +489,15 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
  	if (len > size)
 --- a/drivers/net/wireless/ath/ath11k/core.c
 +++ b/drivers/net/wireless/ath/ath11k/core.c
-@@ -237,6 +237,8 @@ static struct ath11k_hw_params ath11k_hw
+@@ -192,7 +192,6 @@ static struct ath11k_hw_params ath11k_hw
+ 		.supports_regdb = false,
+ 		.fix_l1ss = true,
+ 		.credit_flow = false,
+-		.max_tx_ring = DP_TCL_NUM_RING_MAX,
+ 		.hal_params = &ath11k_hw_hal_params_ipq8074,
+ 		.supports_dynamic_smps_6ghz = false,
+ 		.alloc_cacheable_memory = true,
+@@ -217,6 +216,8 @@ static struct ath11k_hw_params ath11k_hw
  		.tx_ring_size = DP_TCL_DATA_RING_SIZE,
  		.smp2p_wow_exit = false,
  		.support_fw_mac_sequence = false,
@@ -498,15 +506,7 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
  	},
  	{
  		.name = "qca6390 hw2.0",
-@@ -379,7 +381,6 @@ static struct ath11k_hw_params ath11k_hw
- 		.supports_regdb = false,
- 		.fix_l1ss = true,
- 		.credit_flow = false,
--		.max_tx_ring = DP_TCL_NUM_RING_MAX,
- 		.hal_params = &ath11k_hw_hal_params_ipq8074,
- 		.supports_dynamic_smps_6ghz = true,
- 		.alloc_cacheable_memory = true,
-@@ -404,6 +405,8 @@ static struct ath11k_hw_params ath11k_hw
+@@ -384,6 +384,8 @@ static struct ath11k_hw_params ath11k_hw
  		.tx_ring_size = DP_TCL_DATA_RING_SIZE,
  		.smp2p_wow_exit = false,
  		.support_fw_mac_sequence = false,
@@ -515,7 +515,7 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
  	},
  	{
  		.name = "wcn6855 hw2.0",
-@@ -2167,6 +2170,9 @@ int ath11k_core_pre_init(struct ath11k_b
+@@ -2147,6 +2149,9 @@ int ath11k_core_pre_init(struct ath11k_b
  
  	ab->enable_memory_stats = ATH11K_DEBUG_ENABLE_MEMORY_STATS;
  
