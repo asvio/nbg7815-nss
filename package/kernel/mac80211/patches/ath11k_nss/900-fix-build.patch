@@ -56,7 +56,7 @@
  	if (rxcb->is_mcbc) {
 --- a/include/net/cfg80211.h
 +++ b/include/net/cfg80211.h
-@@ -9412,7 +9412,7 @@ void cfg80211_bss_flush(struct wiphy *wi
+@@ -9228,7 +9228,7 @@ void cfg80211_bss_flush(struct wiphy *wi
   * @count: the number of TBTTs until the color change happens
   * @color_bitmap: representations of the colors that the local BSS is aware of
   */
@@ -65,7 +65,7 @@
  			      enum nl80211_commands cmd, u8 count,
  			      u64 color_bitmap);
  
-@@ -9422,9 +9422,9 @@ int cfg80211_bss_color_notify(struct net
+@@ -9238,9 +9238,9 @@ int cfg80211_bss_color_notify(struct net
   * @color_bitmap: representations of the colors that the local BSS is aware of
   */
  static inline int cfg80211_obss_color_collision_notify(struct net_device *dev,
@@ -77,7 +77,7 @@
  					 0, color_bitmap);
  }
  
-@@ -9438,7 +9438,7 @@ static inline int cfg80211_obss_color_co
+@@ -9254,7 +9254,7 @@ static inline int cfg80211_obss_color_co
  static inline int cfg80211_color_change_started_notify(struct net_device *dev,
  						       u8 count)
  {
@@ -86,7 +86,7 @@
  					 count, 0);
  }
  
-@@ -9450,7 +9450,7 @@ static inline int cfg80211_color_change_
+@@ -9266,7 +9266,7 @@ static inline int cfg80211_color_change_
   */
  static inline int cfg80211_color_change_aborted_notify(struct net_device *dev)
  {
@@ -95,7 +95,7 @@
  					 0, 0);
  }
  
-@@ -9462,7 +9462,7 @@ static inline int cfg80211_color_change_
+@@ -9278,7 +9278,7 @@ static inline int cfg80211_color_change_
   */
  static inline int cfg80211_color_change_notify(struct net_device *dev)
  {
