@@ -342,7 +342,6 @@ define KernelPackage/ath11k/config
                	 TARGET_qualcommax_ipq807x_DEVICE_zte_mf269 )
                select ATH11K_MEM_PROFILE_256M if (TARGET_qualcommax_ipq807x_DEVICE_netgear_wax218)
                select NSS_DRV_WIFI_ENABLE
-               select NSS_DRV_WIFI_EXT_VDEV_ENABLE
                default y if TARGET_qualcommax
 
        choice
