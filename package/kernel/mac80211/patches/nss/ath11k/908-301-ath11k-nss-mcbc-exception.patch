@@ -218,7 +218,7 @@ Change-Id: I4a6ac67a1c2cf3ab7a219d0953907191606a5e70
  	ATH11K_NSS_OPMODE_AP,
 --- a/drivers/net/wireless/ath/ath11k/dp_rx.c
 +++ b/drivers/net/wireless/ath/ath11k/dp_rx.c
-@@ -3086,6 +3086,23 @@ static void ath11k_dp_rx_process_receive
+@@ -3074,6 +3074,23 @@ static void ath11k_dp_rx_process_receive
  	}
  }
  

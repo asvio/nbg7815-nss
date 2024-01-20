@@ -1,62 +1,6 @@
---- a/drivers/net/wireless/ath/ath11k/dp_rx.c
-+++ b/drivers/net/wireless/ath/ath11k/dp_rx.c
-@@ -2305,6 +2305,7 @@ static void ath11k_dp_rx_h_undecap_snap(
- 	struct ieee80211_hdr *hdr;
- 	size_t hdr_len;
- 	u8 l3_pad_bytes;
-+	int expand_by;
- 	struct hal_rx_desc *rx_desc;
- 	struct ath11k_skb_rxcb *rxcb = ATH11K_SKB_RXCB(msdu);
- 
-@@ -2329,12 +2330,22 @@ static void ath11k_dp_rx_h_undecap_snap(
- 	hdr_len = ieee80211_hdrlen(hdr->frame_control);
- 
- 	if (!(status->flag & RX_FLAG_IV_STRIPPED)) {
--		memcpy(skb_push(msdu,
--				ath11k_dp_rx_crypto_param_len(ar, enctype)),
--		       (void *)hdr + hdr_len,
--			ath11k_dp_rx_crypto_param_len(ar, enctype));
-+		int crypto_param_len = ath11k_dp_rx_crypto_param_len(ar, enctype);
-+
-+		if (skb_headroom(msdu) < crypto_param_len) {
-+			expand_by = crypto_param_len - skb_headroom(msdu);
-+			if (WARN_ON_ONCE(pskb_expand_head(msdu, expand_by, 0, GFP_ATOMIC)))
-+				return;
-+		}
-+		memcpy(skb_push(msdu, crypto_param_len),
-+		       (void *)hdr + hdr_len, crypto_param_len);
- 	}
- 
-+	if (skb_headroom(msdu) < hdr_len) {
-+		expand_by = hdr_len - skb_headroom(msdu);
-+		if (WARN_ON_ONCE(pskb_expand_head(msdu, expand_by, 0, GFP_ATOMIC)))
-+			return;
-+	}
- 	memcpy(skb_push(msdu, hdr_len), hdr, hdr_len);
- }
- 
-@@ -2464,7 +2475,7 @@ static void ath11k_dp_rx_h_mpdu(struct a
- 				struct ieee80211_rx_status *rx_status,
- 				bool *fast_rx)
- {
--	bool  fill_crypto_hdr;
-+	bool fill_crypto_hdr = 0;
- 	enum hal_encrypt_type enctype;
- 	bool is_decrypted = false;
- 	struct ath11k_skb_rxcb *rxcb;
-@@ -2479,7 +2490,8 @@ static void ath11k_dp_rx_h_mpdu(struct a
- 
- 	/* PN for multicast packets will be checked in mac80211 */
- 	rxcb = ATH11K_SKB_RXCB(msdu);
--	fill_crypto_hdr = ath11k_dp_rx_h_attn_is_mcbc(ar->ab, rx_desc);
-+	if (!ar->ab->nss.enabled)
-+		fill_crypto_hdr = ath11k_dp_rx_h_attn_is_mcbc(ar->ab, rx_desc);
- 	rxcb->is_mcbc = fill_crypto_hdr;
- 
- 	if (rxcb->is_mcbc) {
 --- a/include/net/cfg80211.h
 +++ b/include/net/cfg80211.h
-@@ -9228,7 +9228,7 @@ void cfg80211_bss_flush(struct wiphy *wi
+@@ -9224,7 +9224,7 @@ void cfg80211_bss_flush(struct wiphy *wi
   * @count: the number of TBTTs until the color change happens
   * @color_bitmap: representations of the colors that the local BSS is aware of
   */
@@ -65,7 +9,7 @@
  			      enum nl80211_commands cmd, u8 count,
  			      u64 color_bitmap);
  
-@@ -9238,9 +9238,9 @@ int cfg80211_bss_color_notify(struct net
+@@ -9234,9 +9234,9 @@ int cfg80211_bss_color_notify(struct net
   * @color_bitmap: representations of the colors that the local BSS is aware of
   */
  static inline int cfg80211_obss_color_collision_notify(struct net_device *dev,
@@ -77,7 +21,7 @@
  					 0, color_bitmap);
  }
  
-@@ -9254,7 +9254,7 @@ static inline int cfg80211_obss_color_co
+@@ -9250,7 +9250,7 @@ static inline int cfg80211_obss_color_co
  static inline int cfg80211_color_change_started_notify(struct net_device *dev,
  						       u8 count)
  {
@@ -86,7 +30,7 @@
  					 count, 0);
  }
  
-@@ -9266,7 +9266,7 @@ static inline int cfg80211_color_change_
+@@ -9262,7 +9262,7 @@ static inline int cfg80211_color_change_
   */
  static inline int cfg80211_color_change_aborted_notify(struct net_device *dev)
  {
@@ -95,7 +39,7 @@
  					 0, 0);
  }
  
-@@ -9278,7 +9278,7 @@ static inline int cfg80211_color_change_
+@@ -9274,7 +9274,7 @@ static inline int cfg80211_color_change_
   */
  static inline int cfg80211_color_change_notify(struct net_device *dev)
  {
@@ -106,7 +50,7 @@
  }
 --- a/net/mac80211/cfg.c
 +++ b/net/mac80211/cfg.c
-@@ -4793,7 +4793,7 @@ void ieee80211_color_collision_detection
+@@ -4771,7 +4771,7 @@ void ieee80211_color_collision_detection
  	struct ieee80211_sub_if_data *sdata = link->sdata;
  
  	sdata_lock(sdata);
@@ -149,7 +93,7 @@
  
 --- a/net/wireless/nl80211.c
 +++ b/net/wireless/nl80211.c
-@@ -19414,7 +19414,7 @@ void cfg80211_ch_switch_started_notify(s
+@@ -19406,7 +19406,7 @@ void cfg80211_ch_switch_started_notify(s
  }
  EXPORT_SYMBOL(cfg80211_ch_switch_started_notify);
  
@@ -158,7 +102,7 @@
  			      enum nl80211_commands cmd, u8 count,
  			      u64 color_bitmap)
  {
-@@ -19428,7 +19428,7 @@ int cfg80211_bss_color_notify(struct net
+@@ -19420,7 +19420,7 @@ int cfg80211_bss_color_notify(struct net
  
  	trace_cfg80211_bss_color_notify(dev, cmd, count, color_bitmap);
  
@@ -167,7 +111,7 @@
  	if (!msg)
  		return -ENOMEM;
  
-@@ -19451,7 +19451,7 @@ int cfg80211_bss_color_notify(struct net
+@@ -19443,7 +19443,7 @@ int cfg80211_bss_color_notify(struct net
  	genlmsg_end(msg, hdr);
  
  	return genlmsg_multicast_netns(&nl80211_fam, wiphy_net(&rdev->wiphy),

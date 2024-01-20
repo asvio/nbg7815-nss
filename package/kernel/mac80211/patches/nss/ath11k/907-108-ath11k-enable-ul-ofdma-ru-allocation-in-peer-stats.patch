@@ -15,7 +15,7 @@
  			 "\nDCM: %llu\nRU: 26 %llu 52: %llu 106: %llu 242: %llu 484: %llu 996: %llu\n",
 --- a/drivers/net/wireless/ath/ath11k/dp_rx.c
 +++ b/drivers/net/wireless/ath/ath11k/dp_rx.c
-@@ -3236,11 +3236,12 @@ exit:
+@@ -3224,11 +3224,12 @@ exit:
  static void
  ath11k_dp_rx_update_peer_rate_table_stats(struct ath11k_rx_peer_stats *rx_stats,
  					  struct hal_rx_mon_ppdu_info *ppdu_info,
@@ -30,7 +30,7 @@
  	u32 bw_idx = ppdu_info->bw;
  	u32 gi_idx = ppdu_info->gi;
  
-@@ -3262,10 +3263,13 @@ ath11k_dp_rx_update_peer_rate_table_stat
+@@ -3250,10 +3251,13 @@ ath11k_dp_rx_update_peer_rate_table_stat
  	}
  
  	rx_stats->pkt_stats.rx_rate[rate_idx] += num_msdu;
@@ -46,7 +46,7 @@
  					   struct hal_rx_mon_ppdu_info *ppdu_info)
  {
  	struct ath11k_rx_peer_stats *rx_stats = arsta->rx_stats;
-@@ -3323,7 +3327,6 @@ static void ath11k_dp_rx_update_peer_sta
+@@ -3311,7 +3315,6 @@ static void ath11k_dp_rx_update_peer_sta
  	rx_stats->num_mpdu_fcs_ok += ppdu_info->num_mpdu_fcs_ok;
  	rx_stats->num_mpdu_fcs_err += ppdu_info->num_mpdu_fcs_err;
  	rx_stats->dcm_count += ppdu_info->dcm;
@@ -54,7 +54,7 @@
  
  	BUILD_BUG_ON(ARRAY_SIZE(arsta->chain_signal) >
  			     ARRAY_SIZE(ppdu_info->rssi_chain_pri20));
-@@ -3341,10 +3344,10 @@ static void ath11k_dp_rx_update_peer_sta
+@@ -3329,10 +3332,10 @@ static void ath11k_dp_rx_update_peer_sta
  
  	if (ppdu_info->preamble_type == HAL_RX_PREAMBLE_11N &&
  	    ppdu_info->mcs <= HAL_RX_MAX_MCS_HT) {
@@ -69,7 +69,7 @@
  	}
  
  	if (ppdu_info->preamble_type == HAL_RX_PREAMBLE_11AC &&
-@@ -3377,7 +3380,120 @@ static void ath11k_dp_rx_update_peer_sta
+@@ -3365,7 +3368,120 @@ static void ath11k_dp_rx_update_peer_sta
  		rx_stats->byte_stats.bw_count[ppdu_info->bw] += ppdu_info->mpdu_len;
  	}
  
@@ -191,7 +191,7 @@
  
  }
  
-@@ -5846,6 +5962,55 @@ static void ath11k_dp_rx_mon_dest_proces
+@@ -5834,6 +5950,55 @@ static void ath11k_dp_rx_mon_dest_proces
  	}
  }
  
@@ -247,7 +247,7 @@
  int ath11k_dp_rx_process_mon_status(struct ath11k_base *ab, int mac_id,
  				    struct napi_struct *napi, int budget)
  {
-@@ -5917,10 +6082,13 @@ int ath11k_dp_rx_process_mon_status(stru
+@@ -5905,10 +6070,13 @@ int ath11k_dp_rx_process_mon_status(stru
  			goto next_skb;
  		}
  
