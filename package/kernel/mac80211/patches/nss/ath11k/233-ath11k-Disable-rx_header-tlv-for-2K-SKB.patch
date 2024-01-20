@@ -825,15 +825,6 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  extern const struct ath11k_hw_ops ipq8074_ops;
 --- a/drivers/net/wireless/ath/ath11k/mac.c
 +++ b/drivers/net/wireless/ath/ath11k/mac.c
-@@ -3421,7 +3421,7 @@ static int ath11k_mac_config_obss_pd(str
- 
- static void ath11k_mac_op_nss_bss_info_changed(struct ieee80211_hw *hw,
- 					   struct ieee80211_vif *vif,
--					   u32 changed)
-+					   u64 changed)
- {
- 	struct ath11k *ar = hw->priv;
- 	struct ath11k_vif *arvif = ath11k_vif_to_arvif(vif);
 @@ -6338,6 +6338,7 @@ static int ath11k_mac_config_mon_status_
  			tlv_filter.rx_filter = ath11k_debugfs_rx_filter(ar);
  	}
@@ -842,15 +833,6 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  	for (i = 0; i < ab->hw_params.num_rxmda_per_pdev; i++) {
  		ring_id = ar->dp.rx_mon_status_refill_ring[i].refill_buf_ring.ring_id;
  		ret = ath11k_dp_tx_htt_rx_filter_setup(ar->ab, ring_id,
-@@ -9714,8 +9715,6 @@ static int __ath11k_mac_register(struct
- 		wiphy_ext_feature_set(ar->hw->wiphy,
- 				      NL80211_EXT_FEATURE_ACK_SIGNAL_SUPPORT);
- 
--	wiphy_ext_feature_set(ar->hw->wiphy, NL80211_EXT_FEATURE_ACK_SIGNAL_SUPPORT);
--
- 	ar->hw->queues = ATH11K_HW_MAX_QUEUES;
- 	ar->hw->wiphy->tx_queue_len = ATH11K_QUEUE_LEN;
- 	ar->hw->offchannel_tx_hw_queue = ATH11K_HW_MAX_QUEUES - 1;
 --- a/drivers/net/wireless/ath/ath11k/rx_desc.h
 +++ b/drivers/net/wireless/ath/ath11k/rx_desc.h
 @@ -1442,9 +1442,11 @@ struct hal_rx_desc_ipq8074 {

@@ -311,7 +311,9 @@ define KernelPackage/ath11k
   URL:=https://wireless.wiki.kernel.org/en/users/drivers/ath11k
   DEPENDS+= +kmod-ath +@DRIVER_11AC_SUPPORT +@DRIVER_11AX_SUPPORT \
   +kmod-crypto-michael-mic +ATH11K_THERMAL:kmod-hwmon-core +ATH11K_THERMAL:kmod-thermal \
-  +ATH11K_NSS_SUPPORT:kmod-qca-nss-drv
+  +ATH11K_NSS_SUPPORT:kmod-qca-nss-drv \
+  +@(ATH11K_NSS_SUPPORT):NSS_DRV_WIFI_ENABLE \
+  +@(ATH11K_NSS_SUPPORT):NSS_DRV_WIFI_EXT_VDEV_ENABLE
   FILES:=$(PKG_BUILD_DIR)/drivers/soc/qcom/qmi_helpers.ko \
   $(PKG_BUILD_DIR)/drivers/net/wireless/ath/ath11k/ath11k.ko
 ifdef CONFIG_ATH11K_NSS_SUPPORT
@@ -341,9 +343,6 @@ define KernelPackage/ath11k/config
                	 TARGET_qualcommax_ipq807x_DEVICE_xiaomi_ax3600 || \
                	 TARGET_qualcommax_ipq807x_DEVICE_zte_mf269 )
                select ATH11K_MEM_PROFILE_256M if (TARGET_qualcommax_ipq807x_DEVICE_netgear_wax218)
-               select NSS_DRV_WIFI_ENABLE
-               select NSS_DRV_WIFI_EXT_VDEV_ENABLE
-               default y if TARGET_qualcommax
 
        choice
           prompt "ATH11K Memory Profile"

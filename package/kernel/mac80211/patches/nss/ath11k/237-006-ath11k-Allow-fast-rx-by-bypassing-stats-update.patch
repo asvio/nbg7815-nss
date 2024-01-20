@@ -23,7 +23,7 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
 
 --- a/drivers/net/wireless/ath/ath11k/core.h
 +++ b/drivers/net/wireless/ath/ath11k/core.h
-@@ -136,6 +136,7 @@ struct ath11k_skb_rxcb {
+@@ -135,6 +135,7 @@ struct ath11k_skb_rxcb {
  	u8 tid;
  	u16 peer_id;
  	u16 seq_no;
@@ -31,21 +31,20 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
  };
  
  enum ath11k_hw_rev {
-@@ -1040,6 +1041,7 @@ struct ath11k_base {
- 	struct ath11k_num_vdevs_peers *num_vdevs_peers;
+@@ -1026,6 +1027,7 @@ struct ath11k_base {
  
- 	u32 rx_hash;
+ 	atomic_t num_max_allowed;
+ 	struct ath11k_num_vdevs_peers *num_vdevs_peers;
 +	bool stats_disable;
  
  	/* must be last */
  	u8 drv_priv[] __aligned(sizeof(void *));
 --- a/drivers/net/wireless/ath/ath11k/debugfs.c
 +++ b/drivers/net/wireless/ath/ath11k/debugfs.c
-@@ -1020,6 +1020,80 @@ static const struct file_operations fops
- 	.open = simple_open,
- 	.write = ath11k_write_rx_hash,
+@@ -972,6 +972,79 @@ static const struct file_operations fops
+ 	.llseek = default_llseek,
  };
-+
+ 
 +static void ath11k_debug_config_mon_status(struct ath11k *ar, bool enable)
 +{
 +	struct htt_rx_ring_tlv_filter tlv_filter = {0};
@@ -122,15 +121,6 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
  int ath11k_debugfs_pdev_create(struct ath11k_base *ab)
  {
  	if (test_bit(ATH11K_FLAG_REGISTERED, &ab->dev_flags))
-@@ -1035,7 +1109,7 @@ int ath11k_debugfs_pdev_create(struct at
- 		debugfs_create_file("sram", 0400, ab->debugfs_soc, ab,
- 				    &fops_sram_dump);
- 
--		debugfs_create_file("rx_hash", 0600, ab->debugfs_soc, ab,
-+	debugfs_create_file("rx_hash", 0600, ab->debugfs_soc, ab,
- 			    &fops_soc_rx_hash);
- 
- 
 --- a/drivers/net/wireless/ath/ath11k/dp_rx.c
 +++ b/drivers/net/wireless/ath/ath11k/dp_rx.c
 @@ -375,6 +375,12 @@ static int ath11k_dp_purge_mon_ring(stru
@@ -333,7 +323,7 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
  
 --- a/drivers/net/wireless/ath/ath11k/hw.c
 +++ b/drivers/net/wireless/ath/ath11k/hw.c
-@@ -303,6 +303,16 @@ static bool ath11k_hw_ipq8074_rx_desc_ge
+@@ -297,6 +297,16 @@ static bool ath11k_hw_ipq8074_rx_desc_ge
  			 __le32_to_cpu(desc->u.ipq8074.msdu_start.info2));
  }
  
@@ -350,7 +340,7 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
  static bool ath11k_hw_ipq8074_rx_desc_get_mpdu_seq_ctl_vld(struct hal_rx_desc *desc)
  {
  	return !!FIELD_GET(RX_MPDU_START_INFO1_MPDU_SEQ_CTRL_VALID,
-@@ -590,6 +600,16 @@ static bool ath11k_hw_qcn9074_rx_desc_ge
+@@ -584,6 +594,16 @@ static bool ath11k_hw_qcn9074_rx_desc_ge
  			 __le32_to_cpu(desc->u.qcn9074.msdu_start.info2));
  }
  
@@ -367,7 +357,7 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
  static bool ath11k_hw_qcn9074_rx_desc_get_mpdu_seq_ctl_vld(struct hal_rx_desc *desc)
  {
  	return !!FIELD_GET(RX_MPDU_START_INFO11_MPDU_SEQ_CTRL_VALID,
-@@ -1132,6 +1152,7 @@ const struct ath11k_hw_ops qca6390_ops =
+@@ -1137,6 +1157,7 @@ const struct ath11k_hw_ops qca6390_ops =
  	.rx_desc_get_encrypt_type = ath11k_hw_ipq8074_rx_desc_get_encrypt_type,
  	.rx_desc_get_decap_type = ath11k_hw_ipq8074_rx_desc_get_decap_type,
  	.rx_desc_get_mesh_ctl = ath11k_hw_ipq8074_rx_desc_get_mesh_ctl,
@@ -375,7 +365,7 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
  	.rx_desc_get_ldpc_support = ath11k_hw_ipq8074_rx_desc_get_ldpc_support,
  	.rx_desc_get_mpdu_seq_ctl_vld = ath11k_hw_ipq8074_rx_desc_get_mpdu_seq_ctl_vld,
  	.rx_desc_get_mpdu_fc_valid = ath11k_hw_ipq8074_rx_desc_get_mpdu_fc_valid,
-@@ -1293,6 +1314,7 @@ const struct ath11k_hw_ops ipq5018_ops =
+@@ -1298,6 +1319,7 @@ const struct ath11k_hw_ops ipq5018_ops =
  	.rx_desc_get_encrypt_type = ath11k_hw_qcn9074_rx_desc_get_encrypt_type,
  	.rx_desc_get_decap_type = ath11k_hw_qcn9074_rx_desc_get_decap_type,
  	.rx_desc_get_mesh_ctl = ath11k_hw_qcn9074_rx_desc_get_mesh_ctl,
@@ -395,7 +385,7 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
  	bool (*rx_desc_get_mpdu_fc_valid)(struct hal_rx_desc *desc);
 --- a/drivers/net/wireless/ath/ath11k/mac.c
 +++ b/drivers/net/wireless/ath/ath11k/mac.c
-@@ -5201,6 +5201,14 @@ static int ath11k_mac_op_sta_state(struc
+@@ -5197,6 +5197,14 @@ static int ath11k_mac_op_sta_state(struc
  		}
  	} else if (old_state == IEEE80211_STA_AUTHORIZED &&
  		   new_state == IEEE80211_STA_ASSOC) {

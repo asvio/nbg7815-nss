@@ -14,17 +14,25 @@ Signed-off-by: Rajkumar Manoharan <rmanohar@codeaurora.org>
 
 --- a/drivers/net/wireless/ath/ath11k/mac.c
 +++ b/drivers/net/wireless/ath/ath11k/mac.c
-@@ -3272,7 +3272,8 @@ static int ath11k_mac_config_obss_pd(str
+@@ -22,7 +22,6 @@
+ #include "testmode.h"
+ #include "peer.h"
+ #include "debugfs_sta.h"
+-#include "hif.h"
+ #include "wow.h"
+ #include "nss.h"
+ 
+@@ -3272,7 +3271,8 @@ static int ath11k_mac_config_obss_pd(str
  {
  	u32 bitmap[2], param_id, param_val, pdev_id;
  	int ret;
 -	s8 non_srg_th = 0, srg_th = 0;
-+	s8 non_srg_th = ATH11K_OBSS_PD_THRESHOLD_DISABLED;
++	u8 non_srg_th = ATH11K_OBSS_PD_THRESHOLD_DISABLED;
 +	s8 srg_th = 0;
  
  	pdev_id = ar->pdev->pdev_id;
  
-@@ -3301,8 +3302,6 @@ static int ath11k_mac_config_obss_pd(str
+@@ -3301,8 +3301,6 @@ static int ath11k_mac_config_obss_pd(str
  		if (he_obss_pd->sr_ctrl & IEEE80211_HE_SPR_NON_SRG_OFFSET_PRESENT)
  			non_srg_th = (ATH11K_OBSS_PD_MAX_THRESHOLD +
  				      he_obss_pd->non_srg_max_offset);
@@ -33,7 +41,7 @@ Signed-off-by: Rajkumar Manoharan <rmanohar@codeaurora.org>
  
  		param_val |= ATH11K_OBSS_PD_NON_SRG_EN;
  	}
-@@ -3317,7 +3316,8 @@ static int ath11k_mac_config_obss_pd(str
+@@ -3317,7 +3315,8 @@ static int ath11k_mac_config_obss_pd(str
  		param_val |= ATH11K_OBSS_PD_THRESHOLD_IN_DBM;
  		param_val |= FIELD_PREP(GENMASK(15, 8), srg_th);
  	} else {

@@ -141,7 +141,7 @@ Signed-off-by: Maharaja Kennadyrajan <mkenna@codeaurora.org>
  		}
 --- a/drivers/net/wireless/ath/ath11k/core.c
 +++ b/drivers/net/wireless/ath/ath11k/core.c
-@@ -2145,6 +2145,8 @@ int ath11k_core_pre_init(struct ath11k_b
+@@ -2144,6 +2144,8 @@ int ath11k_core_pre_init(struct ath11k_b
  	if (nss_offload)
  		ab->nss.stats_enabled = 1;
  
@@ -152,7 +152,7 @@ Signed-off-by: Maharaja Kennadyrajan <mkenna@codeaurora.org>
  EXPORT_SYMBOL(ath11k_core_pre_init);
 --- a/drivers/net/wireless/ath/ath11k/core.h
 +++ b/drivers/net/wireless/ath/ath11k/core.h
-@@ -939,6 +939,23 @@ struct ath11k_num_vdevs_peers {
+@@ -909,6 +909,23 @@ struct ath11k_num_vdevs_peers {
    u32 num_peers;
  };
  
@@ -176,7 +176,7 @@ Signed-off-by: Maharaja Kennadyrajan <mkenna@codeaurora.org>
  /* Master structure to hold the hw data which may be used in core module */
  struct ath11k_base {
  	enum ath11k_hw_rev hw_rev;
-@@ -1028,6 +1045,7 @@ struct ath11k_base {
+@@ -998,6 +1015,7 @@ struct ath11k_base {
  	enum ath11k_dfs_region dfs_region;
  #ifdef CPTCFG_ATH11K_DEBUGFS
  	struct dentry *debugfs_soc;
@@ -184,14 +184,14 @@ Signed-off-by: Maharaja Kennadyrajan <mkenna@codeaurora.org>
  #endif
  	struct ath11k_soc_dp_stats soc_stats;
  
-@@ -1094,6 +1112,7 @@ struct ath11k_base {
+@@ -1064,6 +1082,7 @@ struct ath11k_base {
  
  	atomic_t num_max_allowed;
  	struct ath11k_num_vdevs_peers *num_vdevs_peers;
 +	bool enable_memory_stats;
- 
- 	u32 rx_hash;
  	bool stats_disable;
+ 
+ 	u32 max_ast_index;
 --- a/drivers/net/wireless/ath/ath11k/dbring.c
 +++ b/drivers/net/wireless/ath/ath11k/dbring.c
 @@ -143,6 +143,7 @@ static int ath11k_dbring_fill_bufs(struc
@@ -231,7 +231,7 @@ Signed-off-by: Maharaja Kennadyrajan <mkenna@codeaurora.org>
  	return retval;
  }
  
-@@ -1094,6 +1098,106 @@ static const struct file_operations fops
+@@ -1045,6 +1049,106 @@ static const struct file_operations fops
  	.write = ath11k_write_stats_disable,
  };
  
@@ -338,9 +338,9 @@ Signed-off-by: Maharaja Kennadyrajan <mkenna@codeaurora.org>
  int ath11k_debugfs_pdev_create(struct ath11k_base *ab)
  {
  	if (test_bit(ATH11K_FLAG_REGISTERED, &ab->dev_flags))
-@@ -1112,6 +1216,12 @@ int ath11k_debugfs_pdev_create(struct at
- 	debugfs_create_file("rx_hash", 0600, ab->debugfs_soc, ab,
- 			    &fops_soc_rx_hash);
+@@ -1060,6 +1164,12 @@ int ath11k_debugfs_pdev_create(struct at
+ 		debugfs_create_file("sram", 0400, ab->debugfs_soc, ab,
+ 				    &fops_sram_dump);
  
 +	debugfs_create_file("enable_memory_stats", 0600, ab->debugfs_soc,
 +			    ab, &fops_enable_memory_stats);
@@ -348,10 +348,10 @@ Signed-off-by: Maharaja Kennadyrajan <mkenna@codeaurora.org>
 +	debugfs_create_file("memory_stats", 0600, ab->debugfs_soc, ab,
 +			    &fops_memory_stats);
 +
- 
  	return 0;
  }
-@@ -1739,6 +1849,8 @@ static ssize_t ath11k_dump_mgmt_stats(st
+ 
+@@ -1686,6 +1796,8 @@ static ssize_t ath11k_dump_mgmt_stats(st
  	if (!buf)
  		return -ENOMEM;
  
@@ -359,16 +359,6 @@ Signed-off-by: Maharaja Kennadyrajan <mkenna@codeaurora.org>
 +
  	mutex_lock(&ar->conf_mutex);
  	spin_lock_bh(&ar->data_lock);
- 
-@@ -1789,6 +1901,9 @@ static ssize_t ath11k_dump_mgmt_stats(st
- 	ret = simple_read_from_buffer(ubuf, count, ppos, buf, len);
- 	mutex_unlock(&ar->conf_mutex);
- 	kfree(buf);
-+
-+	ATH11K_MEMORY_STATS_DEC(ar->ab, malloc_size, size);
-+
- 	return ret;
- }
  
 --- a/drivers/net/wireless/ath/ath11k/debugfs.h
 +++ b/drivers/net/wireless/ath/ath11k/debugfs.h
@@ -431,7 +421,7 @@ Signed-off-by: Maharaja Kennadyrajan <mkenna@codeaurora.org>
  	return 0;
 --- a/drivers/net/wireless/ath/ath11k/debugfs_sta.c
 +++ b/drivers/net/wireless/ath/ath11k/debugfs_sta.c
-@@ -468,6 +468,8 @@ static ssize_t ath11k_dbg_sta_dump_rx_st
+@@ -333,6 +333,8 @@ static ssize_t ath11k_dbg_sta_dump_rx_st
  	retval = simple_read_from_buffer(user_buf, count, ppos, buf, len);
  	kfree(buf);
  
@@ -616,7 +606,7 @@ Signed-off-by: Maharaja Kennadyrajan <mkenna@codeaurora.org>
  
 --- a/drivers/net/wireless/ath/ath11k/mac.c
 +++ b/drivers/net/wireless/ath/ath11k/mac.c
-@@ -4058,6 +4058,8 @@ static int ath11k_mac_op_hw_scan(struct
+@@ -4052,6 +4052,8 @@ static int ath11k_mac_op_hw_scan(struct
  		goto exit;
  	}
  
@@ -625,7 +615,7 @@ Signed-off-by: Maharaja Kennadyrajan <mkenna@codeaurora.org>
  	ath11k_wmi_start_scan_init(ar, arg);
  	arg->vdev_id = arvif->vdev_id;
  	arg->scan_id = ATH11K_SCAN_ID;
-@@ -4071,6 +4073,8 @@ static int ath11k_mac_op_hw_scan(struct
+@@ -4065,6 +4067,8 @@ static int ath11k_mac_op_hw_scan(struct
  		arg->extraie.len = req->ie_len;
  	}
  
@@ -634,7 +624,7 @@ Signed-off-by: Maharaja Kennadyrajan <mkenna@codeaurora.org>
  	if (req->n_ssids) {
  		arg->num_ssids = req->n_ssids;
  		for (i = 0; i < arg->num_ssids; i++) {
-@@ -4157,9 +4161,16 @@ static int ath11k_mac_op_hw_scan(struct
+@@ -4151,9 +4155,16 @@ static int ath11k_mac_op_hw_scan(struct
  exit:
  	if (arg) {
  		kfree(arg->chan_list);
@@ -654,7 +644,7 @@ Signed-off-by: Maharaja Kennadyrajan <mkenna@codeaurora.org>
  
  	mutex_unlock(&ar->conf_mutex);
  
-@@ -8152,6 +8163,8 @@ ath11k_mac_update_active_vif_chan(struct
+@@ -8105,6 +8116,8 @@ ath11k_mac_update_active_vif_chan(struct
  	if (!arg.vifs)
  		return;
  
@@ -663,7 +653,7 @@ Signed-off-by: Maharaja Kennadyrajan <mkenna@codeaurora.org>
  	ieee80211_iterate_active_interfaces_atomic(ar->hw,
  						   IEEE80211_IFACE_ITER_NORMAL,
  						   ath11k_mac_change_chanctx_fill_iter,
-@@ -8159,6 +8172,8 @@ ath11k_mac_update_active_vif_chan(struct
+@@ -8112,6 +8125,8 @@ ath11k_mac_update_active_vif_chan(struct
  
  	ath11k_mac_update_vif_chan(ar, arg.vifs, arg.n_vifs);
  
@@ -908,7 +898,7 @@ Signed-off-by: Maharaja Kennadyrajan <mkenna@codeaurora.org>
  	ar->num_peers--;
  
  	return 0;
-@@ -902,6 +905,8 @@ int ath11k_peer_create(struct ath11k *ar
+@@ -901,6 +904,8 @@ int ath11k_peer_create(struct ath11k *ar
  		arsta->tcl_metadata &= ~HTT_TCL_META_DATA_VALID_HTT;
  	}
  
@@ -928,7 +918,7 @@ Signed-off-by: Maharaja Kennadyrajan <mkenna@codeaurora.org>
  	skb_reserve(skb, WMI_SKB_HEADROOM);
  	if (!IS_ALIGNED((unsigned long)skb->data, 4))
  		ath11k_warn(ab, "unaligned WMI skb data\n");
-@@ -7346,6 +7348,7 @@ static void ath11k_wmi_htc_tx_complete(s
+@@ -7242,6 +7244,7 @@ static void ath11k_wmi_htc_tx_complete(s
  	u8 eid;
  
  	eid = ATH11K_SKB_CB(skb)->eid;
@@ -936,7 +926,7 @@ Signed-off-by: Maharaja Kennadyrajan <mkenna@codeaurora.org>
  	dev_kfree_skb(skb);
  
  	if (eid >= ATH11K_HTC_EP_COUNT)
-@@ -9139,6 +9142,7 @@ static void ath11k_wmi_tlv_op_rx(struct
+@@ -9035,6 +9038,7 @@ static void ath11k_wmi_tlv_op_rx(struct
  	}
  
  out:

@@ -56,7 +56,7 @@ Signed-off-by: Rameshkumar Sundaram <ramess@codeaurora.org>
  static void ath11k_ahb_free_resources(struct ath11k_base *ab)
 --- a/drivers/net/wireless/ath/ath11k/core.c
 +++ b/drivers/net/wireless/ath/ath11k/core.c
-@@ -2210,6 +2210,7 @@ struct ath11k_base *ath11k_core_alloc(st
+@@ -2209,6 +2209,7 @@ struct ath11k_base *ath11k_core_alloc(st
  
  	mutex_init(&ab->core_lock);
  	mutex_init(&ab->tbl_mtx_lock);
@@ -64,7 +64,7 @@ Signed-off-by: Rameshkumar Sundaram <ramess@codeaurora.org>
  	spin_lock_init(&ab->base_lock);
  	mutex_init(&ab->vdev_id_11d_lock);
  	init_completion(&ab->reset_complete);
-@@ -2223,6 +2224,8 @@ struct ath11k_base *ath11k_core_alloc(st
+@@ -2222,6 +2223,8 @@ struct ath11k_base *ath11k_core_alloc(st
  	INIT_WORK(&ab->restart_work, ath11k_core_restart);
  	INIT_WORK(&ab->update_11d_work, ath11k_update_11d);
  	INIT_WORK(&ab->reset_work, ath11k_core_reset);
@@ -75,15 +75,15 @@ Signed-off-by: Rameshkumar Sundaram <ramess@codeaurora.org>
  	init_completion(&ab->wow.wakeup_completed);
 --- a/drivers/net/wireless/ath/ath11k/core.h
 +++ b/drivers/net/wireless/ath/ath11k/core.h
-@@ -32,6 +32,7 @@
+@@ -31,6 +31,7 @@
+ #include "wow.h"
  #include "rx_desc.h"
  #include "nss.h"
- #include "vendor.h"
 +#include "peer.h"
  
  #define SM(_v, _f) (((_v) << _f##_LSB) & _f##_MASK)
  
-@@ -1130,6 +1131,11 @@ struct ath11k_base {
+@@ -1098,6 +1099,11 @@ struct ath11k_base {
  
  	u32 max_ast_index;
  	u32 num_ast_entries;
@@ -195,7 +195,7 @@ Signed-off-by: Rameshkumar Sundaram <ramess@codeaurora.org>
  
 --- a/drivers/net/wireless/ath/ath11k/peer.c
 +++ b/drivers/net/wireless/ath/ath11k/peer.c
-@@ -160,49 +160,68 @@ struct ath11k_ast_entry *ath11k_peer_ast
+@@ -146,49 +146,68 @@ struct ath11k_ast_entry *ath11k_peer_ast
  
  void ath11k_peer_ast_wds_wmi_wk(struct work_struct *wk)
  {
@@ -299,7 +299,7 @@ Signed-off-by: Rameshkumar Sundaram <ramess@codeaurora.org>
  }
  
  int ath11k_peer_add_ast(struct ath11k *ar, struct ath11k_peer *peer,
-@@ -211,6 +230,8 @@ int ath11k_peer_add_ast(struct ath11k *a
+@@ -197,6 +216,8 @@ int ath11k_peer_add_ast(struct ath11k *a
  	struct ath11k_ast_entry *ast_entry = NULL;
  	struct ath11k_base *ab = ar->ab;
  
@@ -308,7 +308,7 @@ Signed-off-by: Rameshkumar Sundaram <ramess@codeaurora.org>
  	if (ab->num_ast_entries == ab->max_ast_index) {
  		ath11k_warn(ab, "failed to add ast for %pM due to insufficient ast entry resource %d in target\n",
  			    mac_addr, ab->max_ast_index);
-@@ -226,6 +247,9 @@ int ath11k_peer_add_ast(struct ath11k *a
+@@ -212,6 +233,9 @@ int ath11k_peer_add_ast(struct ath11k *a
  		}
  	}
  
@@ -318,7 +318,7 @@ Signed-off-by: Rameshkumar Sundaram <ramess@codeaurora.org>
  	ast_entry = kzalloc(sizeof(*ast_entry), GFP_ATOMIC);
  	if (!ast_entry) {
  		ath11k_warn(ab, "failed to alloc ast_entry for %pM\n",
-@@ -257,7 +281,7 @@ int ath11k_peer_add_ast(struct ath11k *a
+@@ -243,7 +267,7 @@ int ath11k_peer_add_ast(struct ath11k *a
  	}
  
  	INIT_LIST_HEAD(&ast_entry->ase_list);
@@ -327,7 +327,7 @@ Signed-off-by: Rameshkumar Sundaram <ramess@codeaurora.org>
  	ast_entry->vdev_id = peer->vdev_id;
  	ast_entry->pdev_idx = peer->pdev_idx;
  	ast_entry->is_mapped = false;
-@@ -271,16 +295,12 @@ int ath11k_peer_add_ast(struct ath11k *a
+@@ -257,16 +281,12 @@ int ath11k_peer_add_ast(struct ath11k *a
  	ath11k_dbg(ab, ATH11K_DBG_MAC, "ath11k_peer_add_ast peer %pM ast_entry %pM, ast_type %d\n",
  		   peer->addr, mac_addr, ast_entry->type);
  
@@ -346,7 +346,7 @@ Signed-off-by: Rameshkumar Sundaram <ramess@codeaurora.org>
  	}
  
  	ab->num_ast_entries++;
-@@ -293,6 +313,8 @@ int ath11k_peer_update_ast(struct ath11k
+@@ -279,6 +299,8 @@ int ath11k_peer_update_ast(struct ath11k
  	struct ath11k_peer *old_peer = ast_entry->peer;
  	struct ath11k_base *ab = ar->ab;
  
@@ -355,7 +355,7 @@ Signed-off-by: Rameshkumar Sundaram <ramess@codeaurora.org>
  	if (!ast_entry->is_mapped) {
  		ath11k_warn(ab, "ath11k_peer_update_ast: ast_entry %pM not mapped yet\n",
  			    ast_entry->addr);
-@@ -305,6 +327,9 @@ int ath11k_peer_update_ast(struct ath11k
+@@ -291,6 +313,9 @@ int ath11k_peer_update_ast(struct ath11k
  	    (ast_entry->is_active))
  		return 0;
  
@@ -365,7 +365,7 @@ Signed-off-by: Rameshkumar Sundaram <ramess@codeaurora.org>
  	ast_entry->vdev_id = peer->vdev_id;
  	ast_entry->pdev_idx = peer->pdev_idx;
  	ast_entry->type = ATH11K_AST_TYPE_WDS;
-@@ -317,7 +342,14 @@ int ath11k_peer_update_ast(struct ath11k
+@@ -303,7 +328,14 @@ int ath11k_peer_update_ast(struct ath11k
  		   old_peer->addr, peer->addr, ast_entry->addr);
  
  	ast_entry->action = ATH11K_WDS_WMI_UPDATE;
@@ -381,7 +381,7 @@ Signed-off-by: Rameshkumar Sundaram <ramess@codeaurora.org>
  
  	return 0;
  }
-@@ -363,16 +395,23 @@ void ath11k_peer_del_ast(struct ath11k *
+@@ -349,16 +381,23 @@ void ath11k_peer_del_ast(struct ath11k *
  	ath11k_dbg(ab, ATH11K_DBG_MAC, "ath11k_peer_del_ast pdev:%d peer %pM ast_entry %pM\n",
  		   ar->pdev->pdev_id, peer->addr, ast_entry->addr);
  
@@ -410,7 +410,7 @@ Signed-off-by: Rameshkumar Sundaram <ramess@codeaurora.org>
  	ab->num_ast_entries--;
  }
  
-@@ -681,6 +720,10 @@ void ath11k_peer_cleanup(struct ath11k *
+@@ -667,6 +706,10 @@ void ath11k_peer_cleanup(struct ath11k *
  
  	lockdep_assert_held(&ar->conf_mutex);
  
@@ -421,7 +421,7 @@ Signed-off-by: Rameshkumar Sundaram <ramess@codeaurora.org>
  	mutex_lock(&ab->tbl_mtx_lock);
  	spin_lock_bh(&ab->base_lock);
  	list_for_each_entry_safe(peer, tmp_peer, &ab->peers, list) {
-@@ -709,6 +752,9 @@ void ath11k_peer_cleanup(struct ath11k *
+@@ -695,6 +738,9 @@ void ath11k_peer_cleanup(struct ath11k *
  
  	spin_unlock_bh(&ab->base_lock);
  	mutex_unlock(&ab->tbl_mtx_lock);
@@ -431,7 +431,7 @@ Signed-off-by: Rameshkumar Sundaram <ramess@codeaurora.org>
  }
  
  static int ath11k_wait_for_peer_deleted(struct ath11k *ar, int vdev_id, const u8 *addr)
-@@ -743,12 +789,18 @@ static int __ath11k_peer_delete(struct a
+@@ -729,12 +775,18 @@ static int __ath11k_peer_delete(struct a
  	int ret;
  	struct ath11k_peer *peer;
  	struct ath11k_base *ab = ar->ab;
@@ -450,7 +450,7 @@ Signed-off-by: Rameshkumar Sundaram <ramess@codeaurora.org>
  	mutex_lock(&ab->tbl_mtx_lock);
  	spin_lock_bh(&ab->base_lock);
  
-@@ -771,17 +823,35 @@ static int __ath11k_peer_delete(struct a
+@@ -757,17 +809,35 @@ static int __ath11k_peer_delete(struct a
  		return -EINVAL;
  	}
  
@@ -504,15 +504,18 @@ Signed-off-by: Rameshkumar Sundaram <ramess@codeaurora.org>
  	struct ath11k_peer *peer;
  	struct ath11k *ar;
  	bool next_hop;
-@@ -47,6 +45,7 @@ struct ath11k_ast_entry {
- 	bool delete_in_progress;
+@@ -44,9 +42,9 @@ struct ath11k_ast_entry {
+ 	u16 ast_hash_value;
+ 	int ref_cnt;
+ 	enum ath11k_ast_entry_type type;
+-	bool delete_in_progress;
  	void *cookie;
  	struct list_head ase_list;
 +	struct list_head wmi_list;
  };
  
  struct ppdu_user_delayba {
-@@ -97,6 +96,7 @@ struct ath11k_peer {
+@@ -97,6 +95,7 @@ struct ath11k_peer {
  	bool dp_setup_done;
  	struct ppdu_user_delayba ppdu_stats_delayba;
  	bool delayba_flag;

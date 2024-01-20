@@ -259,15 +259,7 @@ Signed-off-by: Sowmiya Sree Elavalagan <ssreeela@codeaurora.org>
  int ath11k_wmi_vdev_create(struct ath11k *ar, u8 *macaddr,
  			   struct vdev_create_params *param)
  {
-@@ -4103,7 +4153,6 @@ ath11k_wmi_copy_resource_config(struct w
- 	wmi_cfg->max_bssid_rx_filters = tg_cfg->max_bssid_rx_filters;
- 	wmi_cfg->use_pdev_id = tg_cfg->use_pdev_id;
- 	wmi_cfg->flag1 = tg_cfg->flag1;
--	wmi_cfg->flag1 |= WMI_RSRC_CFG_FLAG1_ACK_RSSI;
- 	wmi_cfg->peer_map_unmap_v2_support = tg_cfg->peer_map_unmap_v2_support;
- 	wmi_cfg->sched_params = tg_cfg->sched_params;
- 	wmi_cfg->twt_ap_pdev_count = tg_cfg->twt_ap_pdev_count;
-@@ -5856,8 +5905,8 @@ static int ath11k_pull_mgmt_rx_params_tl
+@@ -5855,8 +5905,8 @@ static int ath11k_pull_mgmt_rx_params_tl
  	return 0;
  }
  
@@ -278,37 +270,7 @@ Signed-off-by: Sowmiya Sree Elavalagan <ssreeela@codeaurora.org>
  {
  	struct sk_buff *msdu;
  	struct ieee80211_tx_info *info;
-@@ -5895,6 +5944,11 @@ static int wmi_process_mgmt_tx_comp(stru
- 			info->status.ack_signal = tx_compl_param->ack_rssi;
- 	}
- 
-+	/* dont update rates in this path, qos null data tx completions also can
-+	 * take this path in case of nss offload and can update invalid rates.
-+	 */
-+	info->status.rates[0].idx = -1;
-+
- 	hdr = (struct ieee80211_hdr *)msdu->data;
- 	frm_type = FIELD_GET(IEEE80211_FCTL_STYPE, hdr->frame_control);
- 
-@@ -5913,10 +5967,13 @@ static int wmi_process_mgmt_tx_comp(stru
- 	arvif = ath11k_vif_to_arvif(vif);
- 	mgmt_stats = &arvif->mgmt_stats;
- 
--	if (!tx_compl_param->status)
--		mgmt_stats->tx_compl_succ[frm_type]++;
--	else
--		mgmt_stats->tx_compl_fail[frm_type]++;
-+	if (ieee80211_is_mgmt(hdr->frame_control)) {
-+		if (!tx_compl_param->status)
-+			mgmt_stats->tx_compl_succ[frm_type]++;
-+		else
-+			mgmt_stats->tx_compl_fail[frm_type]++;
-+	}
-+
- 	spin_unlock_bh(&ar->data_lock);
- 
- skip_mgmt_stats:
-@@ -5938,12 +5995,13 @@ skip_mgmt_stats:
+@@ -5937,12 +5987,13 @@ skip_mgmt_stats:
  	return 0;
  }
  
@@ -326,7 +288,7 @@ Signed-off-by: Sowmiya Sree Elavalagan <ssreeela@codeaurora.org>
  	int ret;
  
  	tb = ath11k_wmi_tlv_parse_alloc(ab, skb->data, skb->len, GFP_ATOMIC);
-@@ -5953,7 +6011,7 @@ static int ath11k_pull_mgmt_tx_compl_par
+@@ -5952,7 +6003,7 @@ static int ath11k_pull_mgmt_tx_compl_par
  		return ret;
  	}
  
@@ -335,7 +297,7 @@ Signed-off-by: Sowmiya Sree Elavalagan <ssreeela@codeaurora.org>
  	if (!ev) {
  		ath11k_warn(ab, "failed to fetch mgmt tx compl ev");
  		kfree(tb);
-@@ -7730,10 +7788,11 @@ exit:
+@@ -7729,10 +7780,11 @@ exit:
  
  static void ath11k_mgmt_tx_compl_event(struct ath11k_base *ab, struct sk_buff *skb)
  {
@@ -349,7 +311,7 @@ Signed-off-by: Sowmiya Sree Elavalagan <ssreeela@codeaurora.org>
  		ath11k_warn(ab, "failed to extract mgmt tx compl event");
  		return;
  	}
-@@ -7746,7 +7805,7 @@ static void ath11k_mgmt_tx_compl_event(s
+@@ -7745,7 +7797,7 @@ static void ath11k_mgmt_tx_compl_event(s
  		goto exit;
  	}
  
@@ -358,7 +320,7 @@ Signed-off-by: Sowmiya Sree Elavalagan <ssreeela@codeaurora.org>
  
  	ath11k_dbg(ab, ATH11K_DBG_MGMT,
  		   "event mgmt tx compl ev pdev_id %d, desc_id %d, status %d ack_rssi %d",
-@@ -7757,6 +7816,36 @@ exit:
+@@ -7756,6 +7808,36 @@ exit:
  	rcu_read_unlock();
  }
  
@@ -395,7 +357,7 @@ Signed-off-by: Sowmiya Sree Elavalagan <ssreeela@codeaurora.org>
  static struct ath11k *ath11k_get_ar_on_scan_state(struct ath11k_base *ab,
  						  u32 vdev_id,
  						  enum ath11k_scan_state state)
-@@ -8843,6 +8932,9 @@ static void ath11k_wmi_tlv_op_rx(struct
+@@ -8842,6 +8924,9 @@ static void ath11k_wmi_tlv_op_rx(struct
  	case WMI_GTK_OFFLOAD_STATUS_EVENTID:
  		ath11k_wmi_gtk_offload_status_event(ab, skb);
  		break;
@@ -473,15 +435,7 @@ Signed-off-by: Sowmiya Sree Elavalagan <ssreeela@codeaurora.org>
  	u32 tlv_header;
  	u32 tx_params_dword0;
  	u32 tx_params_dword1;
-@@ -4570,7 +4588,6 @@ struct wmi_pdev_bss_chan_info_event {
- 	u32 rx_bss_cycle_count_low;
- 	u32 rx_bss_cycle_count_high;
- 	u32 pdev_id;
--	u32 ack_rssi;
- } __packed;
- 
- #define WMI_VDEV_INSTALL_KEY_COMPL_STATUS_SUCCESS 0
-@@ -4918,7 +4935,7 @@ struct wmi_rssi_ctl_ext {
+@@ -4917,7 +4935,7 @@ struct wmi_rssi_ctl_ext {
  	u32 rssi_ctl_ext[MAX_ANTENNA_EIGHT - ATH_MAX_ANTENNA];
  };
  
@@ -490,7 +444,7 @@ Signed-off-by: Sowmiya Sree Elavalagan <ssreeela@codeaurora.org>
  	u32 desc_id;
  	u32 status;
  	u32 pdev_id;
-@@ -5748,6 +5765,17 @@ struct wmi_debug_log_config_cmd_fixed_pa
+@@ -5748,6 +5766,17 @@ struct wmi_debug_log_config_cmd_fixed_pa
  	u32 value;
  } __packed;
  
@@ -508,7 +462,7 @@ Signed-off-by: Sowmiya Sree Elavalagan <ssreeela@codeaurora.org>
  #define WMI_MAX_MEM_REQS 32
  
  #define MAX_RADIOS 3
-@@ -6358,6 +6386,8 @@ int ath11k_wmi_cmd_send(struct ath11k_pd
+@@ -6358,6 +6387,8 @@ int ath11k_wmi_cmd_send(struct ath11k_pd
  struct sk_buff *ath11k_wmi_alloc_skb(struct ath11k_wmi_base *wmi_sc, u32 len);
  int ath11k_wmi_mgmt_send(struct ath11k *ar, u32 vdev_id, u32 buf_id,
  			 struct sk_buff *frame);
