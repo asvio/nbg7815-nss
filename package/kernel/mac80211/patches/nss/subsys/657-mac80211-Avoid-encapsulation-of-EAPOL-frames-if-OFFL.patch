@@ -20,7 +20,7 @@ Signed-off-by: Aaradhana Sahu <quic_aarasahu@quicinc.com>
 
 --- a/net/mac80211/ieee80211_i.h
 +++ b/net/mac80211/ieee80211_i.h
-@@ -2062,6 +2062,11 @@ netdev_tx_t ieee80211_subif_start_xmit(s
+@@ -2061,6 +2061,11 @@ netdev_tx_t ieee80211_subif_start_xmit(s
  				       struct net_device *dev);
  netdev_tx_t ieee80211_subif_start_xmit_8023(struct sk_buff *skb,
  					    struct net_device *dev);
@@ -68,12 +68,12 @@ Signed-off-by: Aaradhana Sahu <quic_aarasahu@quicinc.com>
                  }
 @@ -4361,7 +4367,7 @@ void __ieee80211_subif_start_xmit(struct
  		if (info->flags & IEEE80211_TX_CTL_HW_80211_ENCAP) {
- 		    	if (sta)
+ 			if (sta)
  				key = rcu_dereference(sta->ptk[sta->ptk_idx]);
 -			ieee80211_8023_xmit(sdata, dev, sta, key, skb);
 +			ieee80211_8023_xmit(sdata, dev, sta, key, skb, info_flags, ctrl_flags, cookie);
  		} else {
- 		  dev_sw_netstats_tx_add(dev, 1, skb->len);
+ 			dev_sw_netstats_tx_add(dev, 1, skb->len);
  			ieee80211_xmit(sdata, sta, skb);
 @@ -4662,19 +4668,29 @@ static bool ieee80211_tx_8023(struct iee
  

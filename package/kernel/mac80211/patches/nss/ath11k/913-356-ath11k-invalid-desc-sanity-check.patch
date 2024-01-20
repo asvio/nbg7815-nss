@@ -46,7 +46,7 @@ Signed-off-by: Nagarajan Maran <quic_nmaran@quicinc.com>
 
 --- a/drivers/net/wireless/ath/ath11k/dp_rx.c
 +++ b/drivers/net/wireless/ath/ath11k/dp_rx.c
-@@ -3228,6 +3228,16 @@ try_again:
+@@ -3216,6 +3216,16 @@ try_again:
  	while (likely(desc =
  	      (struct hal_reo_dest_ring *)ath11k_hal_srng_dst_get_next_entry(ab,
  									     srng))) {
@@ -63,7 +63,7 @@ Signed-off-by: Nagarajan Maran <quic_nmaran@quicinc.com>
  		cookie = FIELD_GET(BUFFER_ADDR_INFO1_SW_COOKIE,
  				   desc->buf_addr_info.info1);
  		buf_id = FIELD_GET(DP_RXDMA_BUF_COOKIE_BUF_ID,
-@@ -3258,8 +3268,6 @@ try_again:
+@@ -3246,8 +3256,6 @@ try_again:
  
  		num_buffs_reaped[mac_id]++;
  
