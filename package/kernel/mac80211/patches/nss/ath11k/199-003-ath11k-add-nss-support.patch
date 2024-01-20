@@ -496,7 +496,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  
 +static void ath11k_mac_op_nss_bss_info_changed(struct ieee80211_hw *hw,
 +					   struct ieee80211_vif *vif,
-+					   u32 changed)
++					   u64 changed)
 +{
 +	struct ath11k *ar = hw->priv;
 +	struct ath11k_vif *arvif = ath11k_vif_to_arvif(vif);
@@ -691,7 +691,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  	}
  
  	ar->hw->wiphy->features |= NL80211_FEATURE_STATIC_SMPS;
-@@ -9636,6 +9745,9 @@ static int __ath11k_mac_register(struct
+@@ -9634,6 +9743,9 @@ static int __ath11k_mac_register(struct
  	    ab->hw_params.bios_sar_capa)
  		ar->hw->wiphy->sar_capa = ab->hw_params.bios_sar_capa;
  
@@ -811,80 +811,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  	}
  
  	ar->debug.rx_filter = tlv_filter.rx_filter;
-@@ -1669,72 +1669,6 @@ static const struct file_operations fops
- 	.open = simple_open
- };
- 
--int ath11k_debugfs_register(struct ath11k *ar)
--{
--	struct ath11k_base *ab = ar->ab;
--	char pdev_name[10];
--	char buf[100] = {0};
--
--	snprintf(pdev_name, sizeof(pdev_name), "%s%u", "mac", ar->pdev_idx);
--
--	ar->debug.debugfs_pdev = debugfs_create_dir(pdev_name, ab->debugfs_soc);
--	if (IS_ERR(ar->debug.debugfs_pdev))
--		return PTR_ERR(ar->debug.debugfs_pdev);
--
--	/* Create a symlink under ieee80211/phy* */
--	snprintf(buf, 100, "../../ath11k/%pd2", ar->debug.debugfs_pdev);
--	debugfs_create_symlink("ath11k", ar->hw->wiphy->debugfsdir, buf);
--
--	ath11k_debugfs_htt_stats_init(ar);
--
--	ath11k_debugfs_fw_stats_init(ar);
--
--	debugfs_create_file("ext_tx_stats", 0644,
--			    ar->debug.debugfs_pdev, ar,
--			    &fops_extd_tx_stats);
--	debugfs_create_file("ext_rx_stats", 0644,
--			    ar->debug.debugfs_pdev, ar,
--			    &fops_extd_rx_stats);
--	debugfs_create_file("pktlog_filter", 0644,
--			    ar->debug.debugfs_pdev, ar,
--			    &fops_pktlog_filter);
--	debugfs_create_file("fw_dbglog_config", 0600,
--			    ar->debug.debugfs_pdev, ar,
--			    &fops_fw_dbglog);
--	debugfs_create_file("dump_mgmt_stats", 0644,
--			    ar->debug.debugfs_pdev, ar,
--			    &fops_dump_mgmt_stats);
--
--	if (ar->hw->wiphy->bands[NL80211_BAND_5GHZ]) {
--		debugfs_create_file("dfs_simulate_radar", 0200,
--				    ar->debug.debugfs_pdev, ar,
--				    &fops_simulate_radar);
--		debugfs_create_bool("dfs_block_radar_events", 0200,
--				    ar->debug.debugfs_pdev,
--				    &ar->dfs_block_radar_events);
--	}
--
--	if (ab->hw_params.dbr_debug_support)
--		debugfs_create_file("enable_dbr_debug", 0200, ar->debug.debugfs_pdev,
--				    ar, &fops_dbr_debug);
--
--	debugfs_create_file("ps_state_enable", 0600, ar->debug.debugfs_pdev, ar,
--			    &fops_ps_state_enable);
--
--	if (test_bit(WMI_TLV_SERVICE_PEER_POWER_SAVE_DURATION_SUPPORT,
--		     ar->ab->wmi_ab.svc_map)) {
--		debugfs_create_file("ps_timekeeper_enable", 0600,
--				    ar->debug.debugfs_pdev, ar,
--				    &fops_ps_timekeeper_enable);
--
--		debugfs_create_file("reset_ps_duration", 0200,
--				    ar->debug.debugfs_pdev, ar,
--				    &fops_reset_ps_duration);
--	}
--
--	return 0;
--}
--
- void ath11k_debugfs_unregister(struct ath11k *ar)
- {
- 	struct ath11k_debug_dbr *dbr_debug;
-@@ -1977,6 +1911,144 @@ static const struct file_operations ath1
+@@ -1977,6 +1977,75 @@ static const struct file_operations ath1
  	.open = simple_open
  };
  
@@ -957,75 +884,6 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
 +	.llseek = default_llseek,
 +};
 +
-+int ath11k_debugfs_register(struct ath11k *ar)
-+{
-+	struct ath11k_base *ab = ar->ab;
-+	char pdev_name[10];
-+	char buf[100] = {0};
-+
-+	snprintf(pdev_name, sizeof(pdev_name), "%s%u", "mac", ar->pdev_idx);
-+
-+	ar->debug.debugfs_pdev = debugfs_create_dir(pdev_name, ab->debugfs_soc);
-+	if (IS_ERR(ar->debug.debugfs_pdev))
-+		return PTR_ERR(ar->debug.debugfs_pdev);
-+
-+	/* Create a symlink under ieee80211/phy* */
-+	snprintf(buf, 100, "../../ath11k/%pd2", ar->debug.debugfs_pdev);
-+	debugfs_create_symlink("ath11k", ar->hw->wiphy->debugfsdir, buf);
-+
-+	ath11k_debugfs_htt_stats_init(ar);
-+
-+	ath11k_debugfs_fw_stats_init(ar);
-+
-+	debugfs_create_file("ext_tx_stats", 0644,
-+			    ar->debug.debugfs_pdev, ar,
-+			    &fops_extd_tx_stats);
-+	debugfs_create_file("ext_rx_stats", 0644,
-+			    ar->debug.debugfs_pdev, ar,
-+			    &fops_extd_rx_stats);
-+	debugfs_create_file("pktlog_filter", 0644,
-+			    ar->debug.debugfs_pdev, ar,
-+			    &fops_pktlog_filter);
-+	debugfs_create_file("fw_dbglog_config", 0600,
-+			    ar->debug.debugfs_pdev, ar,
-+			    &fops_fw_dbglog);
-+	debugfs_create_file("dump_mgmt_stats", 0644,
-+			    ar->debug.debugfs_pdev, ar,
-+			    &fops_dump_mgmt_stats);
-+
-+	if (ar->hw->wiphy->bands[NL80211_BAND_5GHZ]) {
-+		debugfs_create_file("dfs_simulate_radar", 0200,
-+				    ar->debug.debugfs_pdev, ar,
-+				    &fops_simulate_radar);
-+		debugfs_create_bool("dfs_block_radar_events", 0200,
-+				    ar->debug.debugfs_pdev,
-+				    &ar->dfs_block_radar_events);
-+	}
-+
-+	if (ab->hw_params.dbr_debug_support)
-+		debugfs_create_file("enable_dbr_debug", 0200, ar->debug.debugfs_pdev,
-+				    ar, &fops_dbr_debug);
-+
-+	debugfs_create_file("ps_state_enable", 0600, ar->debug.debugfs_pdev, ar,
-+			    &fops_ps_state_enable);
-+
-+	if (test_bit(WMI_TLV_SERVICE_PEER_POWER_SAVE_DURATION_SUPPORT,
-+		     ar->ab->wmi_ab.svc_map)) {
-+		debugfs_create_file("ps_timekeeper_enable", 0600,
-+				    ar->debug.debugfs_pdev, ar,
-+				    &fops_ps_timekeeper_enable);
-+
-+		debugfs_create_file("reset_ps_duration", 0200,
-+				    ar->debug.debugfs_pdev, ar,
-+				    &fops_reset_ps_duration);
-+	}
-+
-+	if (ab->nss.enabled)
-+		debugfs_create_file("nss_peer_stats_config", 0644,
-+				    ar->debug.debugfs_pdev, ar, &fops_nss_stats);
-+
-+	return 0;
-+}
  void ath11k_debugfs_add_interface(struct ath11k_vif *arvif)
  {
  	struct ath11k_base *ab = arvif->ar->ab;

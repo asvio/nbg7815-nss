@@ -43,6 +43,8 @@ include $(INCLUDE_DIR)/package.mk
 
 WMENU:=Wireless Drivers
 
+NSS_PATCH:= subsys ath10k ath11k
+
 define KernelPackage/mac80211/Default
   SUBMENU:=$(WMENU)
   URL:=https://wireless.wiki.kernel.org/
@@ -377,7 +379,7 @@ define Build/Patch
 	$(call PatchDir,$(PKG_BUILD_DIR),$(PATCH_DIR)/ath10k,ath10k/)
 	$(call PatchDir,$(PKG_BUILD_DIR),$(PATCH_DIR)/ath11k,ath11k/)
 ifdef CONFIG_ATH11K_NSS_SUPPORT
-	$(foreach driver,$(NSS_PATCHES),
+	$(foreach driver,$(NSS_PATCH),
 		$(call PatchDir,$(PKG_BUILD_DIR),$(PATCH_DIR)/nss/$(driver),nss/$(driver)/)
 	)
 endif
@@ -398,7 +400,7 @@ define Quilt/Refresh/Package
 	$(call Quilt/RefreshDir,$(PKG_BUILD_DIR),$(PATCH_DIR)/ath10k,ath10k/)
 	$(call Quilt/RefreshDir,$(PKG_BUILD_DIR),$(PATCH_DIR)/ath11k,ath11k/)
 ifdef CONFIG_ATH11K_NSS_SUPPORT
-	$(foreach driver,$(NSS_PATCHES),
+	$(foreach driver,$(NSS_PATCH),
 		$(call Quilt/RefreshDir,$(PKG_BUILD_DIR),$(PATCH_DIR)/nss/$(driver),nss/$(driver)/)
 	)
 endif

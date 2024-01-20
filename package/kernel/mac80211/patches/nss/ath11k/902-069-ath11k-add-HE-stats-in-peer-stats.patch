@@ -21,9 +21,9 @@ Signed-off-by: Miles Hu <milehu@codeaurora.org>
  #include "wow.h"
 +#include "rx_desc.h"
  #include "nss.h"
- #include "vendor.h"
  
-@@ -478,6 +479,8 @@ struct ath11k_htt_data_stats {
+ #define SM(_v, _f) (((_v) << _f##_LSB) & _f##_MASK)
+@@ -476,6 +477,8 @@ struct ath11k_htt_data_stats {
  	u64 bw[ATH11K_COUNTER_TYPE_MAX][ATH11K_BW_NUM];
  	u64 nss[ATH11K_COUNTER_TYPE_MAX][ATH11K_NSS_NUM];
  	u64 gi[ATH11K_COUNTER_TYPE_MAX][ATH11K_GI_NUM];
@@ -32,7 +32,7 @@ Signed-off-by: Miles Hu <milehu@codeaurora.org>
  };
  
  struct ath11k_htt_tx_stats {
-@@ -485,6 +488,9 @@ struct ath11k_htt_tx_stats {
+@@ -483,6 +486,9 @@ struct ath11k_htt_tx_stats {
  	u64 tx_duration;
  	u64 ba_fails;
  	u64 ack_fails;
@@ -42,7 +42,7 @@ Signed-off-by: Miles Hu <milehu@codeaurora.org>
  };
  
  struct ath11k_per_ppdu_tx_stats {
-@@ -617,11 +623,16 @@ struct ath11k_per_peer_tx_stats {
+@@ -615,11 +621,16 @@ struct ath11k_per_peer_tx_stats {
  	u32 succ_bytes;
  	u32 retry_bytes;
  	u32 failed_bytes;
