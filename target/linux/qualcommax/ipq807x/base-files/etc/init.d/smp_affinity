@@ -1,55 +1,36 @@
 #!/bin/sh /etc/rc.common
 
-START=99
+START=93
 
-enable_affinity_ipq807x(){
-    set_affinity() {
-        irq=$(awk "/$1/{ print substr(\$1, 1, length(\$1)-1); exit }" /proc/interrupts)
-        [ -n "$irq" ] && echo $2 > /proc/irq/$irq/smp_affinity
-    }
+enable_affinity_ipq807x() {
+	set_affinity() {
+		irq=$(awk "/$1/{ print substr(\$1, 1, length(\$1)-1); exit }" /proc/interrupts)
+		[ -n "$irq" ] && echo $2 > /proc/irq/$irq/smp_affinity
+	}
 
-    # assign 4 rx interrupts to each core
-    set_affinity 'reo2host-destination-ring1' 1
-    set_affinity 'reo2host-destination-ring2' 2
-    set_affinity 'reo2host-destination-ring3' 4
-    set_affinity 'reo2host-destination-ring4' 8
+	# assign 4 rx interrupts to each core
+	set_affinity 'reo2host-destination-ring1' 1
+	set_affinity 'reo2host-destination-ring2' 2
+	set_affinity 'reo2host-destination-ring3' 4
+	set_affinity 'reo2host-destination-ring4' 8
 
-    # assign 3 tcl completions to last 3 CPUs
-    set_affinity 'wbm2host-tx-completions-ring1' 2
-    set_affinity 'wbm2host-tx-completions-ring2' 4
-    set_affinity 'wbm2host-tx-completions-ring3' 8
+	# assign 3 tcl completions to last 3 CPUs
+	set_affinity 'wbm2host-tx-completions-ring1' 2
+	set_affinity 'wbm2host-tx-completions-ring2' 4
+	set_affinity 'wbm2host-tx-completions-ring3' 8
 
-    # assign 3 tcl completions to last 3 CPUs
-    set_affinity 'ppdu-end-interrupts-mac1' 2
-    set_affinity 'ppdu-end-interrupts-mac2' 4
-    set_affinity 'ppdu-end-interrupts-mac3' 8
+	# assign 3 ppdu mac interrupts to last 3 cores
+	set_affinity 'ppdu-end-interrupts-mac1' 2
+	set_affinity 'ppdu-end-interrupts-mac2' 4
+	set_affinity 'ppdu-end-interrupts-mac3' 8
 
-    set_affinity 'nss_empty_buf_sos' 4
-    set_affinity 'nss_empty_buf_queue' 4
-
-    set_affinity 'xhci-hcd:usb1' 2
-
-    echo 8 > /proc/irq/50/smp_affinity
+	# assign lan/wan to core 4
+	set_affinity 'edma_txcmpl' 8
+	set_affinity 'edma_rxfill' 8
+	set_affinity 'edma_rxdesc' 8
+	set_affinity 'edma_misc' 8
 }
 
 boot() {
-    case $(board_name) in
-        buffalo,wxr-5950ax12|\
-        compex,wpq873|\
-        dynalink,dl-wrx36|\
-        edgecore,eap102|\
-        edimax,cax1800|\
-        netgear,rax120v2|\
-        netgear,wax218|\
-        netgear,wax620|\
-        netgear,wax630|\
-        prpl,haze|\
-        qnap,301w|\
-        redmi,ax6|\
-        xiaomi,ax3600|\
-        xiaomi,ax9000|\
-        zyxel,nbg7815)
-            enable_affinity_ipq807x
-        ;;
-    esac
+	enable_affinity_ipq807x
 }
