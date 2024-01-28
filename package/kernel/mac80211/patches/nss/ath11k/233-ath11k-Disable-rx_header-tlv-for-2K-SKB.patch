@@ -12,7 +12,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
 
 --- a/drivers/net/wireless/ath/ath11k/debugfs.c
 +++ b/drivers/net/wireless/ath/ath11k/debugfs.c
-@@ -666,6 +666,7 @@ static ssize_t ath11k_write_extd_rx_stat
+@@ -668,6 +668,7 @@ static ssize_t ath11k_write_extd_rx_stat
  	}
  
  	ar->debug.rx_filter = tlv_filter.rx_filter;
@@ -20,7 +20,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  
  	for (i = 0; i < ab->hw_params.num_rxmda_per_pdev; i++) {
  		ring_id = ar->dp.rx_mon_status_refill_ring[i].refill_buf_ring.ring_id;
-@@ -1111,6 +1112,7 @@ static ssize_t ath11k_write_pktlog_filte
+@@ -1129,6 +1130,7 @@ static ssize_t ath11k_write_pktlog_filte
  	}
  
  	/* Clear rx filter set for monitor mode and rx status */
@@ -40,7 +40,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  #define DP_RXDMA_ERR_DST_RING_SIZE	1024
  #define DP_RXDMA_MON_STATUS_RING_SIZE	ATH11K_DP_RXDMA_MON_STATUS_RING_SIZE
  #define DP_RXDMA_MONITOR_BUF_RING_SIZE	ATH11K_DP_RXDMA_MONITOR_BUF_RING_SIZE
-@@ -609,7 +610,7 @@ enum htt_ppdu_stats_tag_type {
+@@ -648,7 +649,7 @@ enum htt_stats_internal_ppdu_frametype {
   *
   *    |31       26|25|24|23            16|15             8|7             0|
   *    |-----------------+----------------+----------------+---------------|
@@ -49,7 +49,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
   *    |-------------------------------------------------------------------|
   *    |              rsvd2               |           ring_buffer_size     |
   *    |-------------------------------------------------------------------|
-@@ -623,6 +624,14 @@ enum htt_ppdu_stats_tag_type {
+@@ -662,6 +663,14 @@ enum htt_stats_internal_ppdu_frametype {
   *    |-------------------------------------------------------------------|
   *    |                         tlv_filter_in_flags                       |
   *    |-------------------------------------------------------------------|
@@ -64,7 +64,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
   * Where:
   *     PS = pkt_swap
   *     SS = status_swap
-@@ -636,6 +645,9 @@ enum htt_ppdu_stats_tag_type {
+@@ -675,6 +684,9 @@ enum htt_stats_internal_ppdu_frametype {
   *                    More details can be got from enum htt_srng_ring_id
   *          b'24    - status_swap: 1 is to swap status TLV
   *          b'25    - pkt_swap:  1 is to swap packet TLV
@@ -74,7 +74,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
   *          b'26:31 - rsvd1:  reserved for future use
   * dword1 - b'0:16  - ring_buffer_size: size of buffers referenced by rx ring,
   *                    in byte units.
-@@ -665,6 +677,42 @@ enum htt_ppdu_stats_tag_type {
+@@ -704,6 +716,42 @@ enum htt_stats_internal_ppdu_frametype {
   * dword6 - b'0:31 -  tlv_filter_in_flags:
   *                    Filter in Attention/MPDU/PPDU/Header/User tlvs
   *                    Refer to CFG_TLV_FILTER_IN_FLAG defs
@@ -117,7 +117,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
   */
  
  #define HTT_RX_RING_SELECTION_CFG_CMD_INFO0_MSG_TYPE	GENMASK(7, 0)
-@@ -672,8 +720,16 @@ enum htt_ppdu_stats_tag_type {
+@@ -711,8 +759,16 @@ enum htt_stats_internal_ppdu_frametype {
  #define HTT_RX_RING_SELECTION_CFG_CMD_INFO0_RING_ID	GENMASK(23, 16)
  #define HTT_RX_RING_SELECTION_CFG_CMD_INFO0_SS		BIT(24)
  #define HTT_RX_RING_SELECTION_CFG_CMD_INFO0_PS		BIT(25)
@@ -134,7 +134,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  
  enum htt_rx_filter_tlv_flags {
  	HTT_RX_FILTER_TLV_FLAGS_MPDU_START		= BIT(0),
-@@ -977,6 +1033,14 @@ enum htt_rx_data_pkt_filter_tlv_flasg3 {
+@@ -1016,6 +1072,14 @@ enum htt_rx_data_pkt_filter_tlv_flasg3 {
  		HTT_RX_FILTER_TLV_FLAGS_PER_MSDU_HEADER | \
  		HTT_RX_FILTER_TLV_FLAGS_ATTENTION)
  
@@ -149,7 +149,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  struct htt_rx_ring_selection_cfg_cmd {
  	u32 info0;
  	u32 info1;
-@@ -985,6 +1049,10 @@ struct htt_rx_ring_selection_cfg_cmd {
+@@ -1024,6 +1088,10 @@ struct htt_rx_ring_selection_cfg_cmd {
  	u32 pkt_type_en_flags2;
  	u32 pkt_type_en_flags3;
  	u32 rx_filter_tlv;
@@ -160,7 +160,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  } __packed;
  
  struct htt_rx_ring_tlv_filter {
-@@ -993,6 +1061,14 @@ struct htt_rx_ring_tlv_filter {
+@@ -1032,6 +1100,14 @@ struct htt_rx_ring_tlv_filter {
  	u32 pkt_filter_flags1; /* MGMT */
  	u32 pkt_filter_flags2; /* CTRL */
  	u32 pkt_filter_flags3; /* DATA */
@@ -226,7 +226,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  static void ath11k_dp_service_mon_ring(struct timer_list *t)
  {
  	struct ath11k_base *ab = from_timer(ab, t, mon_reap_timer);
-@@ -1976,6 +2011,49 @@ int ath11k_dp_rx_crypto_icv_len(struct a
+@@ -2126,6 +2161,49 @@ int ath11k_dp_rx_crypto_icv_len(struct a
  	return 0;
  }
  
@@ -276,7 +276,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  static void ath11k_dp_rx_h_undecap_nwifi(struct ath11k *ar,
  					 struct sk_buff *msdu,
  					 u8 *first_hdr,
-@@ -1989,7 +2067,8 @@ static void ath11k_dp_rx_h_undecap_nwifi
+@@ -2139,7 +2217,8 @@ static void ath11k_dp_rx_h_undecap_nwifi
  	u8 da[ETH_ALEN];
  	u8 sa[ETH_ALEN];
  	u16 qos_ctl = 0;
@@ -286,7 +286,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  
  	/* copy SA & DA and pull decapped header */
  	hdr = (struct ieee80211_hdr *)msdu->data;
-@@ -1998,7 +2077,7 @@ static void ath11k_dp_rx_h_undecap_nwifi
+@@ -2148,7 +2227,7 @@ static void ath11k_dp_rx_h_undecap_nwifi
  	ether_addr_copy(sa, ieee80211_get_SA(hdr));
  	skb_pull(msdu, ieee80211_hdrlen(hdr->frame_control));
  
@@ -295,7 +295,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  		/* original 802.11 header is valid for the first msdu
  		 * hence we can reuse the same header
  		 */
-@@ -2028,16 +2107,23 @@ static void ath11k_dp_rx_h_undecap_nwifi
+@@ -2178,16 +2257,23 @@ static void ath11k_dp_rx_h_undecap_nwifi
  
  		/* copy decap header before overwriting for reuse below */
  		memcpy(decap_hdr, (uint8_t *)hdr, hdr_len);
@@ -324,7 +324,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  		memcpy(skb_push(msdu,
  				IEEE80211_QOS_CTL_LEN), &qos_ctl,
  				IEEE80211_QOS_CTL_LEN);
-@@ -2153,6 +2239,20 @@ static void ath11k_dp_rx_h_undecap_eth(s
+@@ -2303,6 +2389,20 @@ static void ath11k_dp_rx_h_undecap_eth(s
  	u8 da[ETH_ALEN];
  	u8 sa[ETH_ALEN];
  	void *rfc1042;
@@ -345,7 +345,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  
  	rfc1042 = ath11k_dp_rx_h_find_rfc1042(ar, msdu, enctype);
  	if (WARN_ON_ONCE(!rfc1042))
-@@ -2181,6 +2281,7 @@ static void ath11k_dp_rx_h_undecap_eth(s
+@@ -2331,6 +2431,7 @@ static void ath11k_dp_rx_h_undecap_eth(s
  
  	memcpy(skb_push(msdu, hdr_len), hdr, hdr_len);
  
@@ -353,7 +353,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  	/* original 802.11 header has a different DA and in
  	 * case of 4addr it may also have different SA
  	 */
-@@ -2199,6 +2300,7 @@ static void ath11k_dp_rx_h_undecap_snap(
+@@ -2349,6 +2450,7 @@ static void ath11k_dp_rx_h_undecap_snap(
  	size_t hdr_len;
  	u8 l3_pad_bytes;
  	struct hal_rx_desc *rx_desc;
@@ -361,7 +361,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  
  	/* Delivered decapped frame:
  	 * [amsdu header] <-- replaced with 802.11 hdr
-@@ -2212,6 +2314,11 @@ static void ath11k_dp_rx_h_undecap_snap(
+@@ -2362,6 +2464,11 @@ static void ath11k_dp_rx_h_undecap_snap(
  	skb_put(msdu, l3_pad_bytes);
  	skb_pull(msdu, sizeof(struct ath11k_dp_amsdu_subframe_hdr) + l3_pad_bytes);
  
@@ -373,7 +373,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  	hdr = (struct ieee80211_hdr *)first_hdr;
  	hdr_len = ieee80211_hdrlen(hdr->frame_control);
  
-@@ -2608,6 +2715,20 @@ static int ath11k_dp_rx_process_msdu(str
+@@ -2758,6 +2865,20 @@ static int ath11k_dp_rx_process_msdu(str
  		goto free_out;
  	}
  
@@ -394,7 +394,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  	rxcb = ATH11K_SKB_RXCB(msdu);
  	rxcb->rx_desc = rx_desc;
  	msdu_len = ath11k_dp_rx_h_msdu_start_msdu_len(ab, rx_desc);
-@@ -2620,8 +2741,9 @@ static int ath11k_dp_rx_process_msdu(str
+@@ -2770,8 +2891,9 @@ static int ath11k_dp_rx_process_msdu(str
  			hdr_status = ath11k_dp_rx_h_80211_hdr(ab, rx_desc);
  			ret = -EINVAL;
  			ath11k_warn(ab, "invalid msdu len %u\n", msdu_len);
@@ -406,7 +406,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  			ath11k_dbg_dump(ab, ATH11K_DBG_DATA, NULL, "", rx_desc,
  					sizeof(struct hal_rx_desc));
  			goto free_out;
-@@ -3283,6 +3405,7 @@ static int ath11k_dp_rx_h_verify_tkip_mi
+@@ -3433,6 +3555,7 @@ static int ath11k_dp_rx_h_verify_tkip_mi
  
  	hdr = (struct ieee80211_hdr *)(msdu->data + hal_rx_desc_sz);
  	hdr_len = ieee80211_hdrlen(hdr->frame_control);
@@ -414,7 +414,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  	head_len = hdr_len + hal_rx_desc_sz + IEEE80211_TKIP_IV_LEN;
  	tail_len = IEEE80211_CCMP_MIC_LEN + IEEE80211_TKIP_ICV_LEN + FCS_LEN;
  
-@@ -3563,8 +3686,8 @@ static void ath11k_dp_rx_h_sort_frags(st
+@@ -3713,8 +3836,8 @@ static void ath11k_dp_rx_h_sort_frags(st
  
  static u64 ath11k_dp_rx_h_get_pn(struct ath11k *ar, struct sk_buff *skb)
  {
@@ -424,7 +424,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  	u8 *ehdr;
  	u32 hal_rx_desc_sz = ar->ab->hw_params.hal_desc_sz;
  
-@@ -3794,8 +3917,9 @@ ath11k_dp_process_rx_err_buf(struct ath1
+@@ -3944,8 +4067,9 @@ ath11k_dp_process_rx_err_buf(struct ath1
  	if ((msdu_len + hal_rx_desc_sz) > DP_RX_BUFFER_SIZE) {
  		hdr_status = ath11k_dp_rx_h_80211_hdr(ar->ab, rx_desc);
  		ath11k_warn(ar->ab, "invalid msdu leng %u", msdu_len);
@@ -436,7 +436,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  		ath11k_dbg_dump(ar->ab, ATH11K_DBG_DATA, NULL, "", rx_desc,
  				sizeof(struct hal_rx_desc));
  		dev_kfree_skb_any(msdu);
-@@ -4418,6 +4542,47 @@ void ath11k_dp_rx_pdev_free(struct ath11
+@@ -4568,6 +4692,47 @@ void ath11k_dp_rx_pdev_free(struct ath11
  	ath11k_dp_rxdma_pdev_buf_free(ar);
  }
  
@@ -484,7 +484,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  int ath11k_dp_rx_pdev_alloc(struct ath11k_base *ab, int mac_id)
  {
  	struct ath11k *ar = ab->pdevs[mac_id].ar;
-@@ -4511,6 +4676,12 @@ config_refill_ring:
+@@ -4661,6 +4826,12 @@ config_refill_ring:
  		}
  	}
  
@@ -825,7 +825,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  extern const struct ath11k_hw_ops ipq8074_ops;
 --- a/drivers/net/wireless/ath/ath11k/mac.c
 +++ b/drivers/net/wireless/ath/ath11k/mac.c
-@@ -6338,6 +6338,7 @@ static int ath11k_mac_config_mon_status_
+@@ -6341,6 +6341,7 @@ static int ath11k_mac_config_mon_status_
  			tlv_filter.rx_filter = ath11k_debugfs_rx_filter(ar);
  	}
  
@@ -871,7 +871,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  	u8 msdu_payload[];
  } __packed;
  
-@@ -1502,4 +1508,17 @@ struct hal_rx_desc {
+@@ -1507,4 +1513,17 @@ struct hal_rx_desc {
  #define RU_484 18
  #define RU_996 37
  
@@ -891,7 +891,7 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  #endif /* ATH11K_RX_DESC_H */
 --- a/drivers/net/wireless/ath/ath11k/nss.c
 +++ b/drivers/net/wireless/ath/ath11k/nss.c
-@@ -1800,7 +1800,7 @@ static int ath11k_nss_init(struct ath11k
+@@ -2226,7 +2226,7 @@ static int ath11k_nss_init(struct ath11k
  
  	/* fill rx parameters to initialize rx context */
  	wim->wrip.tlv_size = ab->hw_params.hal_desc_sz;

@@ -35,18 +35,7 @@ Signed-off-by: Venkateswara Naralasetty <quic_vnaralas@quicinc.com>
  enum hal_encrypt_type ath11k_dp_tx_get_encrypt_type(u32 cipher)
  {
  	switch (cipher) {
-@@ -143,9 +130,8 @@ int ath11k_dp_tx(struct ath11k *ar, stru
- 		     !ieee80211_is_data(hdr->frame_control)))
- 		return -ENOTSUPP;
- 
--	pool_id = skb_get_queue_mapping(skb) & (ATH11K_HW_MAX_QUEUES - 1);
--
- 	ring_selector = ab->hw_params.hw_ops->get_ring_selector(skb);
-+	pool_id = ring_selector;
- 
- tcl_ring_sel:
- 	tcl_ring_retry = false;
-@@ -221,10 +207,6 @@ tcl_ring_sel:
+@@ -232,10 +219,6 @@ tcl_ring_sel:
  	if (ieee80211_vif_is_mesh(arvif->vif))
  		ti.enable_mesh = true;
  
@@ -62,14 +51,14 @@ Signed-off-by: Venkateswara Naralasetty <quic_vnaralas@quicinc.com>
 @@ -65,7 +65,6 @@ void ath11k_hal_tx_cmd_desc_setup(struct
  		FIELD_PREP(HAL_TCL_DATA_CMD_INFO1_PKT_OFFSET, ti->pkt_offset);
  
- 	tcl_cmd->info2 = ti->flags1 |
+ 	tcl_cmd.info2 = ti->flags1 |
 -		FIELD_PREP(HAL_TCL_DATA_CMD_INFO2_TID, ti->tid) |
  		FIELD_PREP(HAL_TCL_DATA_CMD_INFO2_LMAC_ID, ti->lmac_id);
  
- 	tcl_cmd->info3 = FIELD_PREP(HAL_TCL_DATA_CMD_INFO3_DSCP_TID_TABLE_IDX,
+ 	tcl_cmd.info3 = FIELD_PREP(HAL_TCL_DATA_CMD_INFO3_DSCP_TID_TABLE_IDX,
 --- a/drivers/net/wireless/ath/ath11k/mac.c
 +++ b/drivers/net/wireless/ath/ath11k/mac.c
-@@ -9680,6 +9680,8 @@ static int __ath11k_mac_register(struct
+@@ -10114,6 +10114,8 @@ static int __ath11k_mac_register(struct
  			ieee80211_hw_set(ar->hw, USES_RSS);
  	}
  
