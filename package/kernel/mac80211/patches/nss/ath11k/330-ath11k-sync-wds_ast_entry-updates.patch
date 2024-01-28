@@ -56,7 +56,7 @@ Signed-off-by: Rameshkumar Sundaram <ramess@codeaurora.org>
  static void ath11k_ahb_free_resources(struct ath11k_base *ab)
 --- a/drivers/net/wireless/ath/ath11k/core.c
 +++ b/drivers/net/wireless/ath/ath11k/core.c
-@@ -2209,6 +2209,7 @@ struct ath11k_base *ath11k_core_alloc(st
+@@ -2213,6 +2213,7 @@ struct ath11k_base *ath11k_core_alloc(st
  
  	mutex_init(&ab->core_lock);
  	mutex_init(&ab->tbl_mtx_lock);
@@ -64,7 +64,7 @@ Signed-off-by: Rameshkumar Sundaram <ramess@codeaurora.org>
  	spin_lock_init(&ab->base_lock);
  	mutex_init(&ab->vdev_id_11d_lock);
  	init_completion(&ab->reset_complete);
-@@ -2222,6 +2223,8 @@ struct ath11k_base *ath11k_core_alloc(st
+@@ -2226,6 +2227,8 @@ struct ath11k_base *ath11k_core_alloc(st
  	INIT_WORK(&ab->restart_work, ath11k_core_restart);
  	INIT_WORK(&ab->update_11d_work, ath11k_update_11d);
  	INIT_WORK(&ab->reset_work, ath11k_core_reset);
@@ -83,7 +83,7 @@ Signed-off-by: Rameshkumar Sundaram <ramess@codeaurora.org>
  
  #define SM(_v, _f) (((_v) << _f##_LSB) & _f##_MASK)
  
-@@ -1098,6 +1099,11 @@ struct ath11k_base {
+@@ -1085,6 +1086,11 @@ struct ath11k_base {
  
  	u32 max_ast_index;
  	u32 num_ast_entries;
@@ -97,7 +97,7 @@ Signed-off-by: Rameshkumar Sundaram <ramess@codeaurora.org>
  };
 --- a/drivers/net/wireless/ath/ath11k/nss.c
 +++ b/drivers/net/wireless/ath/ath11k/nss.c
-@@ -678,8 +678,9 @@ static void ath11k_nss_wds_type_rx(struc
+@@ -609,8 +609,9 @@ static void ath11k_nss_wds_type_rx(struc
  	spin_unlock_bh(&ab->base_lock);
  }
  
@@ -108,7 +108,7 @@ Signed-off-by: Rameshkumar Sundaram <ramess@codeaurora.org>
  	struct ath11k_base *ab = ar->ab;
  	struct ath11k_peer *peer = ar->bss_peer;
  	u8 mac_addr[ETH_ALEN];
-@@ -706,7 +707,7 @@ static void ath11k_nss_mec_handler(struc
+@@ -637,7 +638,7 @@ static void ath11k_nss_mec_handler(struc
  	memcpy(mac_addr, mac_addr_h16, ETH_ALEN - 4);
  	memcpy(mac_addr + 2, mac_addr_l32, 4);
  
@@ -117,7 +117,7 @@ Signed-off-by: Rameshkumar Sundaram <ramess@codeaurora.org>
  		spin_lock_bh(&ab->base_lock);
  		ath11k_peer_add_ast(ar, peer, mac_addr,
  				    ATH11K_AST_TYPE_MEC);
-@@ -741,7 +742,7 @@ static void ath11k_nss_vdev_spl_receive_
+@@ -672,7 +673,7 @@ static void ath11k_nss_vdev_spl_receive_
  					       addr4_valid, peer_id);
  			break;
  		case NSS_WIFI_VDEV_WDS_TYPE_MEC:
@@ -126,7 +126,7 @@ Signed-off-by: Rameshkumar Sundaram <ramess@codeaurora.org>
  			break;
  		default:
  			ath11k_warn(ab, "unsupported wds_type %d\n", wds_type);
-@@ -2410,11 +2411,7 @@ int ath11k_nss_add_wds_peer(struct ath11
+@@ -2335,11 +2336,7 @@ int ath11k_nss_add_wds_peer(struct ath11
  	wds_peer_msg->ast_type = type;
  	wds_peer_msg->peer_id = peer->peer_id;
  
@@ -139,7 +139,7 @@ Signed-off-by: Rameshkumar Sundaram <ramess@codeaurora.org>
  	ether_addr_copy(wds_peer_msg->dest_mac, dest_mac);
  
  	msg_cb = (nss_wifili_msg_callback_t)ath11k_nss_wifili_event_receive;
-@@ -2537,7 +2534,7 @@ msg_free:
+@@ -2462,7 +2459,7 @@ msg_free:
  	return ret;
  }
  
@@ -148,7 +148,7 @@ Signed-off-by: Rameshkumar Sundaram <ramess@codeaurora.org>
  			    u8 *dest_mac)
  {
  	struct ath11k_base *ab = ar->ab;
-@@ -2555,8 +2552,8 @@ int ath11k_nss_del_wds_peer(struct ath11
+@@ -2480,8 +2477,8 @@ int ath11k_nss_del_wds_peer(struct ath11
  
  	wds_peer_msg->pdev_id = ar->pdev->pdev_id;
  	wds_peer_msg->ast_type = ATH11K_AST_TYPE_NONE;
@@ -494,7 +494,7 @@ Signed-off-by: Rameshkumar Sundaram <ramess@codeaurora.org>
  	if (ret) {
 --- a/drivers/net/wireless/ath/ath11k/peer.h
 +++ b/drivers/net/wireless/ath/ath11k/peer.h
-@@ -31,9 +31,7 @@ enum ath11k_wds_wmi_action {
+@@ -42,9 +42,7 @@ enum ath11k_wds_wmi_action {
  struct ath11k_ast_entry {
  	u16 ast_idx;
  	u8 addr[ETH_ALEN];
@@ -504,7 +504,7 @@ Signed-off-by: Rameshkumar Sundaram <ramess@codeaurora.org>
  	struct ath11k_peer *peer;
  	struct ath11k *ar;
  	bool next_hop;
-@@ -44,9 +42,9 @@ struct ath11k_ast_entry {
+@@ -55,9 +53,9 @@ struct ath11k_ast_entry {
  	u16 ast_hash_value;
  	int ref_cnt;
  	enum ath11k_ast_entry_type type;
@@ -514,7 +514,7 @@ Signed-off-by: Rameshkumar Sundaram <ramess@codeaurora.org>
 +	struct list_head wmi_list;
  };
  
- struct ppdu_user_delayba {
+ struct ath11k_peer {
 @@ -97,6 +95,7 @@ struct ath11k_peer {
  	bool dp_setup_done;
  	struct ppdu_user_delayba ppdu_stats_delayba;

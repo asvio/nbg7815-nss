@@ -144,7 +144,7 @@ Signed-off-by: Venkateswara Naralasetty <quic_vnaralas@quicinc.com>
  #define DP_TCL_STATUS_RING_SIZE		32
 --- a/drivers/net/wireless/ath/ath11k/dp_tx.c
 +++ b/drivers/net/wireless/ath/ath11k/dp_tx.c
-@@ -122,6 +122,7 @@ int ath11k_dp_tx(struct ath11k *ar, stru
+@@ -135,6 +135,7 @@ int ath11k_dp_tx(struct ath11k *ar, stru
  	u8 ring_map = 0;
  	bool tcl_ring_retry, is_diff_encap = false;
  	u8 align_pad, htt_meta_size = 0, max_tx_ring, tcl_ring_id, ring_id;
@@ -152,7 +152,7 @@ Signed-off-by: Venkateswara Naralasetty <quic_vnaralas@quicinc.com>
  
  	if (unlikely(!(info->flags & IEEE80211_TX_CTL_HW_80211_ENCAP) &&
  		     !ieee80211_is_data(hdr->frame_control)))
-@@ -152,24 +153,28 @@ tcl_ring_sel:
+@@ -164,24 +165,28 @@ tcl_ring_sel:
  	tx_ring = &dp->tx_ring[tcl_ring_id];
  
  	spin_lock_bh(&tx_ring->tx_idr_lock);
@@ -187,7 +187,7 @@ Signed-off-by: Venkateswara Naralasetty <quic_vnaralas@quicinc.com>
  		     FIELD_PREP(DP_TX_DESC_ID_POOL_ID, pool_id);
  	ti.encap_type = ath11k_dp_tx_get_encap_type(arvif, skb);
  
-@@ -341,10 +346,9 @@ fail_unmap_dma:
+@@ -355,10 +360,9 @@ fail_unmap_dma:
  fail_remove_idr:
  	if (ti.pkt_offset)
  		skb_pull(skb, ti.pkt_offset);
@@ -201,7 +201,7 @@ Signed-off-by: Venkateswara Naralasetty <quic_vnaralas@quicinc.com>
  
  	if (tcl_ring_retry)
  		goto tcl_ring_sel;
-@@ -353,16 +357,19 @@ fail_remove_idr:
+@@ -367,16 +371,19 @@ fail_remove_idr:
  }
  
  static void ath11k_dp_tx_free_txbuf(struct ath11k_base *ab, u8 mac_id,
@@ -226,7 +226,7 @@ Signed-off-by: Venkateswara Naralasetty <quic_vnaralas@quicinc.com>
  
  	if (unlikely(!msdu)) {
  		ath11k_warn(ab, "tx completion for unknown msdu_id %d\n",
-@@ -386,16 +393,20 @@ ath11k_dp_tx_htt_tx_complete_buf(struct
+@@ -400,16 +407,20 @@ ath11k_dp_tx_htt_tx_complete_buf(struct
  				 struct ath11k_dp_htt_wbm_tx_status *ts)
  {
  	struct ieee80211_tx_status status = { 0 };
@@ -251,7 +251,7 @@ Signed-off-by: Venkateswara Naralasetty <quic_vnaralas@quicinc.com>
  
  	if (unlikely(!msdu)) {
  		ath11k_warn(ab, "htt tx completion for unknown msdu_id %d\n",
-@@ -860,6 +871,7 @@ void ath11k_dp_tx_completion_handler(str
+@@ -874,6 +885,7 @@ void ath11k_dp_tx_completion_handler(str
  	}
  
  	while (count--) {
@@ -259,7 +259,7 @@ Signed-off-by: Venkateswara Naralasetty <quic_vnaralas@quicinc.com>
  		tx_status = &tx_ring->tx_status[i++];
  
  		desc_id = FIELD_GET(BUFFER_ADDR_INFO1_SW_COOKIE,
-@@ -878,17 +890,19 @@ void ath11k_dp_tx_completion_handler(str
+@@ -892,17 +904,19 @@ void ath11k_dp_tx_completion_handler(str
  			continue;
  		}
  

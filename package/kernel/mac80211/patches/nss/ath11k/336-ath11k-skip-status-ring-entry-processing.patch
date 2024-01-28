@@ -35,7 +35,7 @@ Signed-off-by: Venkateswara Naralasetty <quic_vnaralas@quicinc.com>
 
 --- a/drivers/net/wireless/ath/ath11k/dp_rx.c
 +++ b/drivers/net/wireless/ath/ath11k/dp_rx.c
-@@ -3296,6 +3296,46 @@ ath11k_dp_rx_mon_update_status_buf_state
+@@ -3464,6 +3464,46 @@ ath11k_dp_rx_mon_update_status_buf_state
  	}
  }
  
@@ -82,7 +82,7 @@ Signed-off-by: Venkateswara Naralasetty <quic_vnaralas@quicinc.com>
  static int ath11k_dp_rx_reap_mon_status_ring(struct ath11k_base *ab, int mac_id,
  					     int *budget, struct sk_buff_head *skb_list)
  {
-@@ -3309,6 +3349,7 @@ static int ath11k_dp_rx_reap_mon_status_
+@@ -3477,6 +3517,7 @@ static int ath11k_dp_rx_reap_mon_status_
  	struct sk_buff *skb;
  	struct ath11k_skb_rxcb *rxcb;
  	struct hal_tlv_hdr *tlv;
@@ -90,7 +90,7 @@ Signed-off-by: Venkateswara Naralasetty <quic_vnaralas@quicinc.com>
  	u32 cookie;
  	int buf_id, srng_id;
  	dma_addr_t paddr;
-@@ -3328,8 +3369,7 @@ static int ath11k_dp_rx_reap_mon_status_
+@@ -3496,8 +3537,7 @@ static int ath11k_dp_rx_reap_mon_status_
  	ath11k_hal_srng_access_begin(ab, srng);
  	while (*budget) {
  		*budget -= 1;
@@ -100,7 +100,7 @@ Signed-off-by: Venkateswara Naralasetty <quic_vnaralas@quicinc.com>
  		if (!rx_mon_status_desc) {
  			pmon->buf_state = DP_MON_STATUS_REPLINISH;
  			break;
-@@ -3360,18 +3400,43 @@ static int ath11k_dp_rx_reap_mon_status_
+@@ -3528,18 +3568,43 @@ static int ath11k_dp_rx_reap_mon_status_
  			tlv = (struct hal_tlv_hdr *)skb->data;
  			if (FIELD_GET(HAL_TLV_HDR_TAG, tlv->tl) !=
  					HAL_RX_STATUS_BUFFER_DONE) {
@@ -180,7 +180,7 @@ Signed-off-by: Venkateswara Naralasetty <quic_vnaralas@quicinc.com>
  	lockdep_assert_held(&srng->lock);
 --- a/drivers/net/wireless/ath/ath11k/hal.h
 +++ b/drivers/net/wireless/ath/ath11k/hal.h
-@@ -953,6 +953,8 @@ int ath11k_hal_srng_dst_num_free(struct
+@@ -952,6 +952,8 @@ int ath11k_hal_srng_dst_num_free(struct
  void ath11k_hal_srng_dst_invalidate_entry(struct ath11k_base *ab,
  					  struct hal_srng *srng, int entries);
  u32 *ath11k_hal_srng_src_peek(struct ath11k_base *ab, struct hal_srng *srng);

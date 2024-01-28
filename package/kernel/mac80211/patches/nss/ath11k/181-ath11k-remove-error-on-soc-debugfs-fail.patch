@@ -34,7 +34,7 @@ Signed-off-by: Anilkumar Kolli <akolli@codeaurora.org>
 
 --- a/drivers/net/wireless/ath/ath11k/core.c
 +++ b/drivers/net/wireless/ath/ath11k/core.c
-@@ -2240,5 +2240,17 @@ err_sc_free:
+@@ -2189,5 +2189,17 @@ err_sc_free:
  }
  EXPORT_SYMBOL(ath11k_core_alloc);
  
@@ -54,16 +54,16 @@ Signed-off-by: Anilkumar Kolli <akolli@codeaurora.org>
  MODULE_LICENSE("Dual BSD/GPL");
 --- a/drivers/net/wireless/ath/ath11k/debugfs.c
 +++ b/drivers/net/wireless/ath/ath11k/debugfs.c
-@@ -15,6 +15,8 @@
+@@ -16,6 +16,8 @@
+ #include "peer.h"
  #include "hif.h"
- #include "qmi.h"
  
 +struct dentry *debugfs_ath11k;
 +
  static const char *htt_bp_umac_ring[HTT_SW_UMAC_RING_IDX_MAX] = {
  	"REO2SW1_RING",
  	"REO2SW2_RING",
-@@ -1228,8 +1230,6 @@ int ath11k_debugfs_pdev_create(struct at
+@@ -991,8 +993,6 @@ int ath11k_debugfs_pdev_create(struct at
  
  void ath11k_debugfs_pdev_destroy(struct ath11k_base *ab)
  {
@@ -72,7 +72,7 @@ Signed-off-by: Anilkumar Kolli <akolli@codeaurora.org>
  }
  
  int ath11k_debugfs_soc_create(struct ath11k_base *ab)
-@@ -1282,6 +1282,24 @@ void ath11k_debugfs_soc_destroy(struct a
+@@ -1045,6 +1045,24 @@ void ath11k_debugfs_soc_destroy(struct a
  }
  EXPORT_SYMBOL(ath11k_debugfs_soc_destroy);
  
@@ -97,7 +97,7 @@ Signed-off-by: Anilkumar Kolli <akolli@codeaurora.org>
  void ath11k_debugfs_fw_stats_init(struct ath11k *ar)
  {
  	struct dentry *fwstats_dir = debugfs_create_dir("fw_stats",
-@@ -1834,6 +1852,9 @@ int ath11k_debugfs_register(struct ath11
+@@ -1675,6 +1693,9 @@ int ath11k_debugfs_register(struct ath11
  	char pdev_name[10];
  	char buf[100] = {0};
  
@@ -107,7 +107,7 @@ Signed-off-by: Anilkumar Kolli <akolli@codeaurora.org>
  	snprintf(pdev_name, sizeof(pdev_name), "%s%u", "mac", ar->pdev_idx);
  
  	ar->debug.debugfs_pdev = debugfs_create_dir(pdev_name, ab->debugfs_soc);
-@@ -1908,6 +1929,9 @@ void ath11k_debugfs_unregister(struct at
+@@ -1752,6 +1773,9 @@ void ath11k_debugfs_unregister(struct at
  		kfree(dbr_debug);
  		ar->debug.dbr_debug[i] = NULL;
  	}
@@ -119,8 +119,8 @@ Signed-off-by: Anilkumar Kolli <akolli@codeaurora.org>
  static ssize_t ath11k_write_twt_add_dialog(struct file *file,
 --- a/drivers/net/wireless/ath/ath11k/debugfs.h
 +++ b/drivers/net/wireless/ath/ath11k/debugfs.h
-@@ -282,6 +282,8 @@ do {									\
- #endif
+@@ -263,6 +263,8 @@ struct ath11k_fw_dbglog {
+ };
  
  #ifdef CPTCFG_ATH11K_DEBUGFS
 +int ath11k_debugfs_create(void);
@@ -128,8 +128,8 @@ Signed-off-by: Anilkumar Kolli <akolli@codeaurora.org>
  int ath11k_debugfs_soc_create(struct ath11k_base *ab);
  void ath11k_debugfs_soc_destroy(struct ath11k_base *ab);
  int ath11k_debugfs_pdev_create(struct ath11k_base *ab);
-@@ -338,6 +340,15 @@ static inline int ath11k_debug_is_memory
- }
+@@ -314,6 +316,15 @@ void ath11k_debugfs_add_dbring_entry(str
+ 				     struct hal_srng *srng);
  
  #else
 +static inline int ath11k_debugfs_create(void)

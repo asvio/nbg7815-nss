@@ -5,7 +5,7 @@
 
 --- a/drivers/net/wireless/ath/ath11k/dp_rx.c
 +++ b/drivers/net/wireless/ath/ath11k/dp_rx.c
-@@ -5242,8 +5242,11 @@ int ath11k_dp_rx_process_mon_status(stru
+@@ -5376,8 +5376,11 @@ int ath11k_dp_rx_process_mon_status(stru
  			goto next_skb;
  		}
  
