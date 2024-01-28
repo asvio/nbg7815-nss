@@ -270,7 +270,37 @@ Signed-off-by: Sowmiya Sree Elavalagan <ssreeela@codeaurora.org>
  {
  	struct sk_buff *msdu;
  	struct ieee80211_tx_info *info;
-@@ -5937,12 +5987,13 @@ skip_mgmt_stats:
+@@ -5894,6 +5944,11 @@ static int wmi_process_mgmt_tx_comp(stru
+ 			info->status.ack_signal = tx_compl_param->ack_rssi;
+ 	}
+ 
++	/* dont update rates in this path, qos null data tx completions also can
++	 * take this path in case of nss offload and can update invalid rates.
++	 */
++	info->status.rates[0].idx = -1;
++
+ 	hdr = (struct ieee80211_hdr *)msdu->data;
+ 	frm_type = FIELD_GET(IEEE80211_FCTL_STYPE, hdr->frame_control);
+ 
+@@ -5912,10 +5967,13 @@ static int wmi_process_mgmt_tx_comp(stru
+ 	arvif = ath11k_vif_to_arvif(vif);
+ 	mgmt_stats = &arvif->mgmt_stats;
+ 
+-	if (!tx_compl_param->status)
+-		mgmt_stats->tx_compl_succ[frm_type]++;
+-	else
+-		mgmt_stats->tx_compl_fail[frm_type]++;
++	if (ieee80211_is_mgmt(hdr->frame_control)) {
++		if (!tx_compl_param->status)
++			mgmt_stats->tx_compl_succ[frm_type]++;
++		else
++			mgmt_stats->tx_compl_fail[frm_type]++;
++	}
++
+ 	spin_unlock_bh(&ar->data_lock);
+ 
+ skip_mgmt_stats:
+@@ -5937,12 +5995,13 @@ skip_mgmt_stats:
  	return 0;
  }
  
