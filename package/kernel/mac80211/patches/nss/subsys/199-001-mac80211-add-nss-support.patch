@@ -123,7 +123,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
 -
 +	void (*nss_bss_info_changed)(struct ieee80211_hw *hw,
 +				     struct ieee80211_vif *vif,
-+				     u64 changed);
++				     u32 changed);
  	int (*start_ap)(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
  			struct ieee80211_bss_conf *link_conf);
  	void (*stop_ap)(struct ieee80211_hw *hw, struct ieee80211_vif *vif,

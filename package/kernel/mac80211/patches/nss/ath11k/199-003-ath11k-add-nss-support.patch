@@ -164,7 +164,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  
  #define SM(_v, _f) (((_v) << _f##_LSB) & _f##_MASK)
  
-@@ -382,6 +383,9 @@ struct ath11k_vif {
+@@ -384,6 +385,9 @@ struct ath11k_vif {
  #endif /* CPTCFG_ATH11K_DEBUGFS */
  
  	struct ath11k_mgmt_frame_stats mgmt_stats;
@@ -174,7 +174,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  };
  
  struct ath11k_vif_iter {
-@@ -526,6 +530,9 @@ struct ath11k_sta {
+@@ -537,6 +541,9 @@ struct ath11k_sta {
  #endif
  
  	bool use_4addr_set;
@@ -184,7 +184,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  	u16 tcl_metadata;
  
  	/* Protected with ar->data_lock */
-@@ -621,6 +628,9 @@ struct ath11k {
+@@ -632,6 +639,9 @@ struct ath11k {
  	struct ieee80211_hw *hw;
  	struct ieee80211_ops *ops;
  	struct ath11k_pdev_wmi *wmi;
@@ -194,15 +194,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  	struct ath11k_pdev_dp dp;
  	u8 mac_addr[ETH_ALEN];
  	struct ath11k_he ar_he;
-@@ -838,6 +848,7 @@ struct ath11k_soc_dp_tx_err_stats {
- 	 * idr unavailable etc.
- 	 */
- 	atomic_t misc_fail;
-+	atomic_t nss_tx_fail;
- };
- 
- struct ath11k_soc_dp_stats {
-@@ -879,9 +890,11 @@ struct ath11k_base {
+@@ -892,9 +902,11 @@ struct ath11k_base {
  	struct ath11k_htc htc;
  
  	struct ath11k_dp dp;
@@ -365,7 +357,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  
  	if (ar->ab->hw_params.rxdma1_enable) {
  		rx_ring = &dp->rxdma_mon_buf_ring;
-@@ -2027,7 +2030,7 @@ static void ath11k_dp_rx_h_csum_offload(
+@@ -2029,7 +2032,7 @@ static void ath11k_dp_rx_h_csum_offload(
  			  CHECKSUM_NONE : CHECKSUM_UNNECESSARY;
  }
  
@@ -374,7 +366,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  				       enum hal_encrypt_type enctype)
  {
  	switch (enctype) {
-@@ -2054,7 +2057,7 @@ static int ath11k_dp_rx_crypto_mic_len(s
+@@ -2056,7 +2059,7 @@ static int ath11k_dp_rx_crypto_mic_len(s
  	return 0;
  }
  
@@ -383,7 +375,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  					 enum hal_encrypt_type enctype)
  {
  	switch (enctype) {
-@@ -2082,7 +2085,7 @@ static int ath11k_dp_rx_crypto_param_len
+@@ -2084,7 +2087,7 @@ static int ath11k_dp_rx_crypto_param_len
  	return 0;
  }
  
@@ -392,7 +384,56 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  				       enum hal_encrypt_type enctype)
  {
  	switch (enctype) {
-@@ -5373,7 +5376,7 @@ int ath11k_dp_rx_process_mon_status(stru
+@@ -2820,6 +2823,22 @@ static void ath11k_dp_rx_process_receive
+ 	}
+ }
+ 
++void ath11k_dp_rx_from_nss(struct ath11k *ar, struct sk_buff *msdu,
++                           struct napi_struct *napi)
++{
++	struct ieee80211_rx_status rx_status = {0};
++	struct ath11k_skb_rxcb *rxcb;
++
++	rxcb = ATH11K_SKB_RXCB(msdu);
++
++	ath11k_dp_rx_h_ppdu(ar, rxcb->rx_desc, &rx_status);
++	ath11k_dp_rx_h_mpdu(ar, msdu, rxcb->rx_desc, &rx_status);
++
++	rx_status.flag |= RX_FLAG_SKIP_MONITOR | RX_FLAG_DUP_VALIDATED;
++
++	ath11k_dp_rx_deliver_msdu(ar, napi, msdu, &rx_status);
++}
++
+ int ath11k_dp_process_rx(struct ath11k_base *ab, int ring_id,
+ 			 struct napi_struct *napi, int budget)
+ {
+@@ -3127,6 +3146,13 @@ static void ath11k_dp_rx_update_user_sta
+ 	arsta = (struct ath11k_sta *)peer->sta->drv_priv;
+ 	rx_stats = arsta->rx_stats;
+ 
++	if (ar->ab->nss.enabled)
++		ath11k_nss_update_sta_rxrate(ppdu_info, peer, user_stats);
++
++	/* we've updated rate stats dont update dp rx stats if not enabled */
++	if (!ath11k_debugfs_is_extd_rx_stats_enabled(ar))
++		return;
++
+ 	if (!rx_stats)
+ 		return;
+ 
+@@ -3203,8 +3229,10 @@ static void ath11k_dp_rx_update_peer_mu_
+ {
+ 	u32 num_users, i;
+ 
+-	if (!ath11k_debugfs_is_extd_rx_stats_enabled(ar))
++	if (!ar->ab->nss.enabled &&
++	    !ath11k_debugfs_is_extd_rx_stats_enabled(ar)) {
+ 		return;
++	}
+ 
+ 	num_users = ppdu_info->num_users;
+ 	if (num_users > HAL_MAX_UL_MU_USERS)
+@@ -5607,7 +5635,7 @@ int ath11k_dp_rx_process_mon_status(stru
  	struct sk_buff *skb;
  	struct sk_buff_head skb_list;
  	struct ath11k_peer *peer;
@@ -401,9 +442,17 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  	int num_buffs_reaped = 0;
  	u32 rx_buf_sz;
  	u16 log_type;
+@@ -5675,6 +5703,7 @@ int ath11k_dp_rx_process_mon_status(stru
+ 			if (ppdu_info->reception_type == HAL_RX_RECEPTION_TYPE_SU) {
+ 				arsta = (struct ath11k_sta *)peer->sta->drv_priv;
+ 				ath11k_dp_rx_update_peer_su_stats(arsta, ppdu_info);
++				ath11k_nss_update_sta_rxrate(ppdu_info, peer, NULL);
+ 			} else {
+ 				ath11k_dp_rx_mon_process_ulofdma(ppdu_info);
+ 				ath11k_dp_rx_update_peer_mu_stats(ar, ppdu_info);
 --- a/drivers/net/wireless/ath/ath11k/dp_rx.h
 +++ b/drivers/net/wireless/ath/ath11k/dp_rx.h
-@@ -126,4 +126,16 @@ int ath11k_peer_rx_frag_setup(struct ath
+@@ -145,4 +145,18 @@ int ath11k_peer_rx_frag_setup(struct ath
  int ath11k_dp_rx_pktlog_start(struct ath11k_base *ab);
  int ath11k_dp_rx_pktlog_stop(struct ath11k_base *ab, bool stop_timer);
  
@@ -419,6 +468,8 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
 +				 struct hal_rx_desc *desc);
 +u16 ath11k_dp_rx_h_mpdu_start_peer_id(struct ath11k_base *ab,
 +				      struct hal_rx_desc *desc);
++void ath11k_dp_rx_from_nss(struct ath11k *ar, struct sk_buff *msdu,
++				      struct napi_struct *napi);
  #endif /* ATH11K_DP_RX_H */
 --- a/drivers/net/wireless/ath/ath11k/hal.h
 +++ b/drivers/net/wireless/ath/ath11k/hal.h
@@ -431,6 +482,21 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  enum hal_ring_type {
  	HAL_REO_DST,
  	HAL_REO_EXCEPTION,
+--- a/drivers/net/wireless/ath/ath11k/hal_rx.c
++++ b/drivers/net/wireless/ath/ath11k/hal_rx.c
+@@ -938,6 +938,12 @@ ath11k_hal_rx_parse_mon_status_tlv(struc
+ 		ppdu_info->num_mpdu_fcs_err =
+ 			FIELD_GET(HAL_RX_PPDU_END_USER_STATS_INFO0_MPDU_CNT_FCS_ERR,
+ 				  info0);
++
++		if (ppdu_info->fc_valid)
++			ppdu_info->frame_control =
++				FIELD_GET(HAL_RX_PPDU_END_USER_STATS_INFO2_FRAME_CTRL,
++						__le32_to_cpu(eu_stats->info2));
++
+ 		switch (ppdu_info->preamble_type) {
+ 		case HAL_RX_PREAMBLE_11N:
+ 			ppdu_info->ht_flags = 1;
 --- a/drivers/net/wireless/ath/ath11k/mac.c
 +++ b/drivers/net/wireless/ath/ath11k/mac.c
 @@ -24,6 +24,7 @@
@@ -496,7 +562,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  
 +static void ath11k_mac_op_nss_bss_info_changed(struct ieee80211_hw *hw,
 +					   struct ieee80211_vif *vif,
-+					   u64 changed)
++					   u32 changed)
 +{
 +	struct ath11k *ar = hw->priv;
 +	struct ath11k_vif *arvif = ath11k_vif_to_arvif(vif);
@@ -711,7 +777,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  
  static struct ath11k_peer *ath11k_peer_find_list_by_id(struct ath11k_base *ab,
  						       int peer_id)
-@@ -136,6 +137,8 @@ void ath11k_peer_map_event(struct ath11k
+@@ -150,6 +151,8 @@ void ath11k_peer_map_event(struct ath11k
  		ether_addr_copy(peer->addr, mac_addr);
  		list_add(&peer->list, &ab->peers);
  		wake_up(&ab->peer_mapping_wq);
@@ -720,7 +786,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  	}
  
  	ath11k_dbg(ab, ATH11K_DBG_DP_HTT, "peer map vdev %d peer %pM id %d\n",
-@@ -298,17 +301,13 @@ static int __ath11k_peer_delete(struct a
+@@ -312,17 +315,13 @@ static int __ath11k_peer_delete(struct a
  
  	lockdep_assert_held(&ar->conf_mutex);
  
@@ -741,7 +807,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  
  	/* Fallback to peer list search if the correct peer can't be found.
  	 * Skip the deletion of the peer from the rhash since it has already
-@@ -327,10 +326,17 @@ static int __ath11k_peer_delete(struct a
+@@ -341,10 +340,17 @@ static int __ath11k_peer_delete(struct a
  		return -EINVAL;
  	}
  
@@ -760,14 +826,6 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  
  	ret = ath11k_wmi_send_peer_delete_cmd(ar, addr, vdev_id);
  	if (ret) {
-@@ -446,6 +452,7 @@ int ath11k_peer_create(struct ath11k *ar
- 	peer->sec_type_grp = HAL_ENCRYPT_TYPE_OPEN;
- 	peer->vif = arvif->vif;
- 
-+
- 	if (sta) {
- 		arsta = ath11k_sta_to_arsta(sta);
- 		arsta->tcl_metadata |= FIELD_PREP(HTT_TCL_META_DATA_TYPE, 0) |
 --- a/drivers/net/wireless/ath/ath11k/peer.h
 +++ b/drivers/net/wireless/ath/ath11k/peer.h
 @@ -28,6 +28,7 @@ struct ath11k_peer {
@@ -811,17 +869,18 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  	}
  
  	ar->debug.rx_filter = tlv_filter.rx_filter;
-@@ -2001,6 +2001,75 @@ static const struct file_operations ath1
+@@ -1687,6 +1687,76 @@ static const struct file_operations fops
  	.open = simple_open
  };
  
++
 +static ssize_t ath11k_write_nss_stats(struct file *file,
 +				      const char __user *ubuf,
 +				      size_t count, loff_t *ppos)
 +{
 +	struct ath11k *ar = file->private_data;
 +	struct ath11k_base *ab = ar->ab;
-+	u32 nss_stats;
++	u8 nss_stats;
 +	int ret;
 +
 +	if (!ab->nss.enabled) {
@@ -829,7 +888,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
 +		return -EINVAL;
 +	}
 +
-+	if (kstrtouint_from_user(ubuf, count, 0, &nss_stats))
++	if (kstrtou8_from_user(ubuf, count, 0, &nss_stats))
 +		return -EINVAL;
 +
 +	mutex_lock(&ar->conf_mutex);
@@ -884,9 +943,21 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
 +	.llseek = default_llseek,
 +};
 +
- void ath11k_debugfs_add_interface(struct ath11k_vif *arvif)
+ int ath11k_debugfs_register(struct ath11k *ar)
  {
- 	struct ath11k_base *ab = arvif->ar->ab;
+ 	struct ath11k_base *ab = ar->ab;
+@@ -1753,6 +1823,11 @@ int ath11k_debugfs_register(struct ath11
+ 				    &fops_reset_ps_duration);
+ 	}
+ 
++	if (ab->nss.enabled)
++		debugfs_create_file("nss_peer_stats_config", 0644,
++				    ar->debug.debugfs_pdev, ar,
++				    &fops_nss_stats);
++
+ 	return 0;
+ }
+ 
 --- a/drivers/net/wireless/ath/ath11k/dp_tx.c
 +++ b/drivers/net/wireless/ath/ath11k/dp_tx.c
 @@ -12,7 +12,7 @@
@@ -920,7 +991,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  #include "hif.h"
  #include "wmi.h"
  #include "../../../../../net/mac80211/sta_info.h"
-@@ -465,7 +467,7 @@ deliver_amsdu:
+@@ -466,7 +468,7 @@ deliver_amsdu:
  
  	/* create list containing all the subframes */
  	ieee80211_amsdu_to_8023s(skb, &subframe_list, NULL,
@@ -929,7 +1000,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  
  	/* This shouldn't happen, indicating error during defragmentation */
  	if (skb_queue_empty(&subframe_list))
-@@ -657,12 +659,14 @@ drop:
+@@ -658,12 +660,14 @@ drop:
  	return -EINVAL;
  }
  
@@ -945,7 +1016,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  
  	if (!ar->ab->nss.enabled)
  		return 0;
-@@ -675,6 +679,22 @@ int ath11k_nss_vdev_set_cmd(struct ath11
+@@ -676,6 +680,22 @@ int ath11k_nss_vdev_set_cmd(struct ath11
  	if (!vdev_msg)
  		return -ENOMEM;
  
@@ -968,7 +1039,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  	/* TODO: Convert to function for conversion in case of many
  	 * such commands
  	 */
-@@ -1136,7 +1156,6 @@ void ath11k_nss_update_sta_stats(struct
+@@ -1137,7 +1157,6 @@ void ath11k_nss_update_sta_stats(struct
  {
  	struct sta_info *stainfo;
  	struct ath11k_peer *peer;
@@ -976,7 +1047,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  	struct ath11k *ar = arsta->arvif->ar;
  	struct ath11k_base *ab = ar->ab;
  
-@@ -1230,6 +1249,9 @@ void ath11k_nss_update_sta_rxrate(struct
+@@ -1231,6 +1250,9 @@ void ath11k_nss_update_sta_rxrate(struct
  	if (!ab->nss.enabled)
  		return;
  
@@ -986,7 +1057,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  	if (!peer->nss.nss_stats)
  		return;
  
-@@ -1289,7 +1311,7 @@ void ath11k_nss_update_sta_rxrate(struct
+@@ -1290,7 +1312,7 @@ void ath11k_nss_update_sta_rxrate(struct
  		peer->nss.nss_stats->rxrate.mcs = mcs;
  		peer->nss.nss_stats->rxrate.flags = RATE_INFO_FLAGS_HE_MCS;
  		peer->nss.nss_stats->rxrate.he_dcm = ppdu_info->dcm;

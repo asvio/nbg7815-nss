@@ -23,7 +23,7 @@ Signed-off-by: Miles Hu <milehu@codeaurora.org>
  
  #define SM(_v, _f) (((_v) << _f##_LSB) & _f##_MASK)
  
-@@ -458,6 +459,8 @@ struct ath11k_htt_data_stats {
+@@ -469,6 +470,8 @@ struct ath11k_htt_data_stats {
  	u64 bw[ATH11K_COUNTER_TYPE_MAX][ATH11K_BW_NUM];
  	u64 nss[ATH11K_COUNTER_TYPE_MAX][ATH11K_NSS_NUM];
  	u64 gi[ATH11K_COUNTER_TYPE_MAX][ATH11K_GI_NUM];
@@ -32,7 +32,7 @@ Signed-off-by: Miles Hu <milehu@codeaurora.org>
  };
  
  struct ath11k_htt_tx_stats {
-@@ -465,6 +468,9 @@ struct ath11k_htt_tx_stats {
+@@ -476,6 +479,9 @@ struct ath11k_htt_tx_stats {
  	u64 tx_duration;
  	u64 ba_fails;
  	u64 ack_fails;
@@ -42,7 +42,7 @@ Signed-off-by: Miles Hu <milehu@codeaurora.org>
  };
  
  struct ath11k_per_ppdu_tx_stats {
-@@ -581,11 +587,16 @@ struct ath11k_per_peer_tx_stats {
+@@ -592,11 +598,16 @@ struct ath11k_per_peer_tx_stats {
  	u32 succ_bytes;
  	u32 retry_bytes;
  	u32 failed_bytes;
@@ -62,8 +62,8 @@ Signed-off-by: Miles Hu <milehu@codeaurora.org>
  
 --- a/drivers/net/wireless/ath/ath11k/debugfs_sta.c
 +++ b/drivers/net/wireless/ath/ath11k/debugfs_sta.c
-@@ -12,13 +12,39 @@
- #include "dp_tx.h"
+@@ -13,13 +13,39 @@
+ #include "dp_rx.h"
  #include "debugfs_htt_stats.h"
  
 +static inline u32 ath11k_he_tones_in_ru_to_nl80211_he_ru_alloc(u16 ru_tones)
@@ -103,7 +103,7 @@ Signed-off-by: Miles Hu <milehu@codeaurora.org>
  
  	if (!arsta->tx_stats)
  		return;
-@@ -63,6 +89,43 @@ void ath11k_debugfs_sta_add_tx_stats(str
+@@ -64,6 +90,43 @@ void ath11k_debugfs_sta_add_tx_stats(str
  		STATS_OP_FMT(RETRY).legacy[1][mcs] += peer_stats->retry_pkts;
  	}
  
@@ -147,7 +147,7 @@ Signed-off-by: Miles Hu <milehu@codeaurora.org>
  	if (peer_stats->is_ampdu) {
  		tx_stats->ba_fails += peer_stats->ba_fails;
  
-@@ -123,6 +186,17 @@ void ath11k_debugfs_sta_add_tx_stats(str
+@@ -124,6 +187,17 @@ void ath11k_debugfs_sta_add_tx_stats(str
  	STATS_OP_FMT(RETRY).gi[1][gi] += peer_stats->retry_pkts;
  
  	tx_stats->tx_duration += peer_stats->duration;
@@ -165,7 +165,7 @@ Signed-off-by: Miles Hu <milehu@codeaurora.org>
  }
  
  void ath11k_debugfs_sta_update_txcompl(struct ath11k *ar,
-@@ -139,12 +213,13 @@ static ssize_t ath11k_dbg_sta_dump_tx_st
+@@ -140,12 +214,13 @@ static ssize_t ath11k_dbg_sta_dump_tx_st
  	struct ath11k_sta *arsta = ath11k_sta_to_arsta(sta);
  	struct ath11k *ar = arsta->arvif->ar;
  	struct ath11k_htt_data_stats *stats;
@@ -181,7 +181,7 @@ Signed-off-by: Miles Hu <milehu@codeaurora.org>
  
  	if (!arsta->tx_stats)
  		return -ENOENT;
-@@ -162,45 +237,46 @@ static ssize_t ath11k_dbg_sta_dump_tx_st
+@@ -163,45 +238,46 @@ static ssize_t ath11k_dbg_sta_dump_tx_st
  			len += scnprintf(buf + len, size - len, "%s_%s\n",
  					 str_name[k],
  					 str[j]);
@@ -237,7 +237,7 @@ Signed-off-by: Miles Hu <milehu@codeaurora.org>
  					 stats->gi[j][0], stats->gi[j][1],
  					 stats->gi[j][2], stats->gi[j][3]);
  			len += scnprintf(buf + len, size - len,
-@@ -209,10 +285,68 @@ static ssize_t ath11k_dbg_sta_dump_tx_st
+@@ -210,10 +286,68 @@ static ssize_t ath11k_dbg_sta_dump_tx_st
  			for (i = 0; i < ATH11K_LEGACY_NUM; i++)
  				len += scnprintf(buf + len, size - len, "%llu ",
  						 stats->legacy[j][i]);
@@ -307,7 +307,7 @@ Signed-off-by: Miles Hu <milehu@codeaurora.org>
  	len += scnprintf(buf + len, size - len,
  			 "\nTX duration\n %llu usecs\n",
  			 arsta->tx_stats->tx_duration);
-@@ -220,6 +354,7 @@ static ssize_t ath11k_dbg_sta_dump_tx_st
+@@ -221,6 +355,7 @@ static ssize_t ath11k_dbg_sta_dump_tx_st
  			"BA fails\n %llu\n", arsta->tx_stats->ba_fails);
  	len += scnprintf(buf + len, size - len,
  			"ack fails\n %llu\n", arsta->tx_stats->ack_fails);
@@ -595,7 +595,7 @@ Signed-off-by: Miles Hu <milehu@codeaurora.org>
  
  		if (ath11k_debugfs_is_extd_tx_stats_enabled(ar))
  			ath11k_debugfs_sta_add_tx_stats(arsta, peer_stats, rate_idx);
-@@ -1560,13 +1579,87 @@ struct htt_ppdu_stats_info *ath11k_dp_ht
+@@ -1560,13 +1579,89 @@ struct htt_ppdu_stats_info *ath11k_dp_ht
  	return ppdu_info;
  }
  
@@ -640,8 +640,10 @@ Signed-off-by: Miles Hu <milehu@codeaurora.org>
 +	int ret = -EINVAL;
 +	struct htt_ppdu_stats_info * ppdu_info = NULL;
 +
-+	ppdu_info = (struct htt_ppdu_stats_info *)data;
-+	ppdu_info->tlv_bitmap = 0;
++	if (data) {
++		ppdu_info = (struct htt_ppdu_stats_info *)data;
++		ppdu_info->tlv_bitmap = 0;
++	}
 +	while (len > 0) {
 +		if (len < sizeof(*tlv)) {
 +			ath11k_err(ab, "htt tlv parse failure at byte %zd (%zu bytes left, %zu expected)\n",
@@ -684,7 +686,7 @@ Signed-off-by: Miles Hu <milehu@codeaurora.org>
  	u8 pdev_id;
  	u32 ppdu_id, len;
  
-@@ -1601,6 +1694,47 @@ static int ath11k_htt_pull_ppdu_stats(st
+@@ -1601,6 +1696,47 @@ static int ath11k_htt_pull_ppdu_stats(st
  		goto out_unlock_data;
  	}
  

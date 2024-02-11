@@ -100,3 +100,31 @@ Signed-off-by: Sathishkumar Muruganandam <murugana@codeaurora.org>
  
  	key->conf.link_id = -1;
  	key->conf.cipher = cipher;
+--- a/net/mac80211/tx.c
++++ b/net/mac80211/tx.c
+@@ -4654,16 +4654,25 @@ static void ieee80211_8023_xmit(struct i
+ 				struct ieee80211_key *key, struct sk_buff *skb)
+ {
+ 	struct ieee80211_tx_info *info;
++	struct ethhdr *ehdr = (struct ethhdr *)skb->data;
+ 	struct ieee80211_local *local = sdata->local;
+ 	struct tid_ampdu_tx *tid_tx;
+ 	struct sk_buff *seg, *next;
+ 	unsigned int skbs = 0, len = 0;
+ 	u16 queue;
++	unsigned char *ra = ehdr->h_dest;
++	bool multicast;
+ 	u8 tid;
+ 
+ 	queue = ieee80211_select_queue(sdata, sta, skb);
+ 	skb_set_queue_mapping(skb, queue);
+ 
++	multicast = is_multicast_ether_addr(ra);
++
++	if (multicast && sdata->vif.type == NL80211_IFTYPE_AP_VLAN &&
++	    !atomic_read(&sdata->u.vlan.num_mcast_sta))
++		goto out_free;
++
+ 	if (unlikely(test_bit(SCAN_SW_SCANNING, &local->scanning)) &&
+ 	    test_bit(SDATA_STATE_OFFCHANNEL, &sdata->state))
+ 		goto out_free;
