@@ -28,43 +28,64 @@ apply_sysctl() {
     logger -t ath11k_nss "Sysctl key 'extra_pbuf_core0' already set to '"$extra_pbuf_core0"'. Skipping applying wifi nss configs"
   fi
 
-  sysctl -w dev.nss.n2hcfg.n2h_high_water_core0=$n2h_high_water_core0 > /dev/null 2>/dev/null
-
-  logger -t ath11k_nss "$board - setting dev.nss.n2hcfg.n2h_wifi_pool_buf=$n2h_wifi_pool_buf"
-  sysctl -w dev.nss.n2hcfg.n2h_wifi_pool_buf=$n2h_wifi_pool_buf
-
-  logger -t ath11k_nss "$board - setting dev.nss.n2hcfg.n2h_high_water_core0=$n2h_high_water_core0"
-  sysctl -w dev.nss.n2hcfg.n2h_high_water_core0=$n2h_high_water_core0
+  # sysctl -w dev.nss.n2hcfg.n2h_high_water_core0=$n2h_high_water_core0 > /dev/null 2>/dev/null
+  #
+  # logger -t ath11k_nss "$board - setting dev.nss.n2hcfg.n2h_wifi_pool_buf=$n2h_wifi_pool_buf"
+  # sysctl -w dev.nss.n2hcfg.n2h_wifi_pool_buf=$n2h_wifi_pool_buf
+  #
+  # logger -t ath11k_nss "$board - setting dev.nss.n2hcfg.n2h_high_water_core0=$n2h_high_water_core0"
+  # sysctl -w dev.nss.n2hcfg.n2h_high_water_core0=$n2h_high_water_core0
 
 }
 
 apply_nss_config() {
+  if [ ! -r /sys/module/ath11k/parameters/nss_offload ]; then
+    logger -t ath11k_nss "Module parameter '/sys/module/ath11k/parameters/nss_offload' does NOT exist. Skipping applying wifi nss configs"
+    exit 1
+  fi
 
-  sysctl -w dev.nss.n2hcfg.n2h_queue_limit_core0=256 > /dev/null 2> /dev/null
-  sysctl -w dev.nss.n2hcfg.n2h_queue_limit_core1=256 > /dev/null 2> /dev/null
+  enable_nss_offload=$(cat /sys/module/ath11k/parameters/nss_offload)
+
+  if [ "$enable_nss_offload" -ne "1" ]; then
+    logger -t ath11k_nss -s user.warn "Module parameter 'nss_offload=0'. Skipping applying wifi nss configs"
+    exit 1
+  fi
+
+  [ ! -d "/proc/sys/dev/nss/rps" ] && {
+    logger -s -t ath11k_nss -p user.error "NSS driver not loaded or disabled! Exiting... "
+    exit 1
+  }
+
+  # Lock NSS clock to highest setting
+  sysctl -w dev.nss.clock.auto_scale=0 > /dev/null 2> /dev/null
+
+  sysctl -w dev.nss.n2hcfg.n2h_queue_limit_core0=2048 > /dev/null 2> /dev/null
+  sysctl -w dev.nss.n2hcfg.n2h_queue_limit_core1=2048 > /dev/null 2> /dev/null
+
+  sysctl -w dev.nss.rps.hash_bitmap=15 > /dev/null 2> /dev/null
 
   local memory_profile
   if memory_profile=$(uci_get pbuf.opt.memory_profile); then
     case "$memory_profile" in
-       1g*|512m*|256m*)
-          board=$memory_profile
-          logger -t ath11k_nss "Using custom memory profile - $board"
-          ;;
-        off*|false*|disable*|0)
-          logger -s -t ath11k_nss -p user.warn "NSS pbuf option 'memory_profile=off'. Not running. Enable if you have issues connecting more than 65 clients"
-          exit 0
-          ;;
-        auto)
-          board=$(board_name)
-          logger -t ath11k_nss "Setting n2hcfg values for board: $board"
-          ;;
-          *)
-            logger -s -t ath11k_nss -p user.error "Unknown profile $memory_profile. Choose auto, 1gb, 512mb, or 256mb"
-          exit 1
-          ;;
+      1g* | 512m* | 256m*)
+        board=$memory_profile
+        logger -t ath11k_nss "Using custom memory profile - $board"
+        ;;
+      off* | false* | disable* | 0)
+        logger -s -t ath11k_nss -p user.warn "NSS pbuf option 'memory_profile=off'. Not running. Enable if you have issues connecting more than 65 clients"
+        exit 0
+        ;;
+      auto)
+        board=$(board_name)
+        logger -t ath11k_nss "Setting n2hcfg values for board: $board"
+        ;;
+      *)
+        logger -s -t ath11k_nss -p user.error "Unknown profile $memory_profile. Choose auto, 1gb, 512mb, or 256mb"
+        exit 1
+        ;;
     esac
   else
-    exi 0
+    exit 0
   fi
 
   case "$board" in
@@ -104,18 +125,25 @@ apply_nss_config() {
   esac
 }
 
+boost_performance() {
+
+  find /sys/kernel/debug/ath11k -name stats_disable | while read stats_disable; do
+    echo 1 > "$stats_disable"
+  done
+
+  ubus call iwinfo devices | jsonfilter -e "@.devices[*]" | while read device; do
+    tc qdisc replace dev "${device}" root noqueue
+  done
+
+  for num in 0 1 2 3; do
+    echo "performance" > /sys/devices/system/cpu/cpu${num}/cpufreq/scaling_governor
+  done
+
+}
+
 start() {
-  if [ ! -r /sys/module/ath11k/parameters/nss_offload ]; then
-    logger -t ath11k_nss "Module parameter '/sys/module/ath11k/parameters/nss_offload' does NOT exist. Skipping applying wifi nss configs"
-    exit 1
-  fi
 
-  enable_nss_offload=$(cat /sys/module/ath11k/parameters/nss_offload)
-
-  if [ "$enable_nss_offload" = "0" ]; then
-    logger -t ath11k_nss -s user.warn "Module parameter 'nss_offload=0'. Skipping applying wifi nss configs"
-    exit 1
-  fi
-
+  boost_performance
   apply_nss_config
+
 }

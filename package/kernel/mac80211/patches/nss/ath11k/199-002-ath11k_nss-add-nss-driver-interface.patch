@@ -48,7 +48,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  ath11k_ahb-y += ahb.o
 --- /dev/null
 +++ b/drivers/net/wireless/ath/ath11k/nss.c
-@@ -0,0 +1,2392 @@
+@@ -0,0 +1,2396 @@
 +// SPDX-License-Identifier: BSD-3-Clause-Clear
 +/*
 + * Copyright (c) 2020 The Linux Foundation. All rights reserved.
@@ -259,8 +259,9 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
 +	peer = ath11k_peer_find_by_id(ab, peer_id);
 +	if (!peer) {
 +		spin_unlock_bh(&ab->base_lock);
-+		ath11k_warn(ab, "ath11k_nss: unable to free peer mem, peer_id:%d\n",
-+			    peer_id);
++		if(ab->nss.debug_mode)
++      ath11k_warn(ab, "ath11k_nss: unable to free peer mem, peer_id:%d\n",
++            peer_id);
 +		return;
 +	}
 +
@@ -675,7 +676,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
 +	int encap_type = ath11k_dp_tx_get_encap_type(arvif, skb);
 +	struct ath11k_soc_dp_stats *soc_stats = &ar->ab->soc_stats;
 +
-+	if (!arvif->ar->ab->nss.debug_mode && encap_type != arvif->nss.encap) {
++	if (encap_type != arvif->nss.encap) {
 +		ath11k_warn(ar->ab, "encap mismatch in nss tx skb encap type %d" \
 +			    " vif encap type %d\n", encap_type, arvif->nss.encap);
 +		goto drop;
@@ -1421,7 +1422,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
 +	 */
 +	ret = wait_for_completion_timeout(&peer->nss.complete,
 +					  msecs_to_jiffies(ATH11K_NSS_MSG_TIMEOUT_MS));
-+	if (!ret)
++	if (ab->nss.debug_mode && !ret)
 +		ath11k_warn(ab, "timeout while waiting for nss peer delete msg response\n");
 +
 +	return 0;
@@ -1764,6 +1765,8 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
 +		return ATH11K_WIFILI_TARGET_TYPE_QCA6018;
 +	case ATH11K_HW_QCN9074_HW10:
 +		return ATH11K_WIFILI_TARGET_TYPE_QCN9074;
++	case ATH11K_HW_IPQ5018_HW10:
++		return ATH11K_WIFILI_TARGET_TYPE_QCA5018;
 +	default:
 +		ath11k_warn(ab, "NSS Offload not supported for this HW\n");
 +		return ATH11K_WIFILI_TARGET_TYPE_UNKNOWN;
@@ -1775,6 +1778,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
 +	switch (ab->hw_rev) {
 +	case ATH11K_HW_IPQ8074:
 +	case ATH11K_HW_IPQ6018_HW10:
++	case ATH11K_HW_IPQ5018_HW10:
 +		return NSS_WIFILI_INTERNAL_INTERFACE;
 +	case ATH11K_HW_QCN9074_HW10:
 +		return nss_get_available_wifili_external_if();
@@ -2979,7 +2983,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  enum dp_rx_decap_type {
  	DP_RX_DECAP_TYPE_RAW,
  	DP_RX_DECAP_TYPE_NATIVE_WIFI,
-@@ -56,6 +84,9 @@ void ath11k_peer_rx_tid_delete(struct at
+@@ -75,6 +103,9 @@ void ath11k_peer_rx_tid_delete(struct at
  int ath11k_peer_rx_tid_setup(struct ath11k *ar, const u8 *peer_mac, int vdev_id,
  			     u8 tid, u32 ba_win_sz, u16 ssn,
  			     enum hal_pn_type pn_type);
@@ -3010,7 +3014,16 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  	/* TODO: Do we need to enable ANI? */
 --- a/drivers/net/wireless/ath/ath11k/core.h
 +++ b/drivers/net/wireless/ath/ath11k/core.h
-@@ -924,6 +924,7 @@ struct ath11k_base {
+@@ -849,6 +849,8 @@ struct ath11k_soc_dp_tx_err_stats {
+ 	 * idr unavailable etc.
+ 	 */
+ 	atomic_t misc_fail;
++	/* Tx failures due to NSS Tx error status */
++	atomic_t nss_tx_fail;
+ };
+ 
+ struct ath11k_soc_dp_stats {
+@@ -935,6 +937,7 @@ struct ath11k_base {
  	struct list_head peers;
  	wait_queue_head_t peer_mapping_wq;
  	u8 mac_addr[ETH_ALEN];

@@ -26,7 +26,7 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
 
 --- a/drivers/net/wireless/ath/ath11k/core.h
 +++ b/drivers/net/wireless/ath/ath11k/core.h
-@@ -113,6 +113,7 @@ static inline enum wme_ac ath11k_tid_to_
+@@ -115,6 +115,7 @@ static inline enum wme_ac ath11k_tid_to_
  enum ath11k_skb_flags {
  	ATH11K_SKB_HW_80211_ENCAP = BIT(0),
  	ATH11K_SKB_CIPHER_SET = BIT(1),
@@ -34,19 +34,20 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
  };
  
  struct ath11k_skb_cb {
-@@ -888,7 +889,12 @@ struct ath11k_soc_dp_tx_err_stats {
+@@ -883,10 +884,13 @@ struct ath11k_dp_ring_bp_stats {
+ struct ath11k_soc_dp_tx_err_stats {
+ 	/* TCL Ring Descriptor unavailable */
+ 	u32 desc_na[DP_TCL_NUM_RING_MAX];
++	/* TCL Ring IDR unavailable */
++	u32 idr_na[DP_TCL_NUM_RING_MAX];
  	/* Other failures during dp_tx due to mem allocation failure
  	 * idr unavailable etc.
  	 */
-+	/* TCL Ring IDR unavailable */
-+	u32 idr_na[DP_TCL_NUM_RING_MAX];
-+
  	atomic_t misc_fail;
 +	atomic_t max_fail;
-+	/* Tx failures due to NSS Tx error status */
+ 	/* Tx failures due to NSS Tx error status */
  	atomic_t nss_tx_fail;
  };
- 
 --- a/drivers/net/wireless/ath/ath11k/dp.c
 +++ b/drivers/net/wireless/ath/ath11k/dp.c
 @@ -358,7 +358,7 @@ void ath11k_dp_stop_shadow_timers(struct
@@ -342,7 +343,7 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
 +
 +	if (FIELD_GET(HAL_WBM_RELEASE_INFO0_REL_SRC_MODULE, desc->info0) ==
 +	    HAL_WBM_REL_SRC_MODULE_FW) {
-+		status_desc = ((u8 *)desc) + HTT_TX_WBM_COMP_STATUS_OFFSET;
++		status_desc = ((struct htt_tx_wbm_completion *)desc) + HTT_TX_WBM_COMP_STATUS_OFFSET;
 +
 +		/* Dont consider HTT_TX_COMP_STATUS_MEC_NOTIFY */
 +		if (FIELD_GET(HTT_TX_WBM_COMP_INFO0_STATUS, status_desc->info0) ==
@@ -384,7 +385,7 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
 -			ATH11K_TX_COMPL_NEXT(tx_ring->tx_status_head);
 -	}
 +	while ((desc = ath11k_hal_srng_dst_get_next_cache_entry(ab, status_ring))) {
-+		if (!ath11k_dp_tx_completion_valid(desc))
++		if (!ath11k_dp_tx_completion_valid((struct hal_wbm_release_ring *)desc))
 +			continue;
  
 -	if (unlikely((ath11k_hal_srng_dst_peek(ab, status_ring) != NULL) &&
@@ -429,7 +430,7 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
  
 --- a/drivers/net/wireless/ath/ath11k/mac.c
 +++ b/drivers/net/wireless/ath/ath11k/mac.c
-@@ -6668,12 +6668,22 @@ static void ath11k_mac_op_tx(struct ieee
+@@ -6643,12 +6643,22 @@ static void ath11k_mac_op_tx(struct ieee
  	if (control->sta)
  		arsta = ath11k_sta_to_arsta(control->sta);
  
@@ -453,7 +454,7 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
  		ieee80211_free_txskb(ar->hw, skb);
  		return;
  	}
-@@ -7631,7 +7641,7 @@ err_vdev_del:
+@@ -7596,7 +7606,7 @@ err_vdev_del:
  	idr_for_each(&ar->txmgmt_idr,
  		     ath11k_mac_vif_txmgmt_idr_remove, vif);
  
@@ -464,7 +465,7 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
  			     ath11k_mac_vif_unref, vif);
 --- a/drivers/net/wireless/ath/ath11k/debugfs.c
 +++ b/drivers/net/wireless/ath/ath11k/debugfs.c
-@@ -833,10 +833,22 @@ static ssize_t ath11k_debugfs_dump_soc_d
+@@ -832,10 +832,22 @@ static ssize_t ath11k_debugfs_dump_soc_d
  		len += scnprintf(buf + len, size - len, "ring%d: %u\n",
  				 i, soc_stats->tx_err.desc_na[i]);
  
@@ -489,7 +490,7 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
  	if (len > size)
 --- a/drivers/net/wireless/ath/ath11k/core.c
 +++ b/drivers/net/wireless/ath/ath11k/core.c
-@@ -191,7 +191,6 @@ static struct ath11k_hw_params ath11k_hw
+@@ -186,7 +186,6 @@ static struct ath11k_hw_params ath11k_hw
  		.supports_regdb = false,
  		.fix_l1ss = true,
  		.credit_flow = false,
@@ -497,7 +498,7 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
  		.hal_params = &ath11k_hw_hal_params_ipq8074,
  		.supports_dynamic_smps_6ghz = false,
  		.alloc_cacheable_memory = true,
-@@ -216,6 +215,8 @@ static struct ath11k_hw_params ath11k_hw
+@@ -212,6 +211,8 @@ static struct ath11k_hw_params ath11k_hw
  		.tx_ring_size = DP_TCL_DATA_RING_SIZE,
  		.smp2p_wow_exit = false,
  		.support_fw_mac_sequence = false,
@@ -506,7 +507,7 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
  	},
  	{
  		.name = "qca6390 hw2.0",
-@@ -383,6 +384,8 @@ static struct ath11k_hw_params ath11k_hw
+@@ -381,6 +382,8 @@ static struct ath11k_hw_params ath11k_hw
  		.tx_ring_size = DP_TCL_DATA_RING_SIZE,
  		.smp2p_wow_exit = false,
  		.support_fw_mac_sequence = false,
@@ -515,7 +516,7 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
  	},
  	{
  		.name = "wcn6855 hw2.0",
-@@ -2144,6 +2147,9 @@ int ath11k_core_pre_init(struct ath11k_b
+@@ -2146,6 +2149,9 @@ int ath11k_core_pre_init(struct ath11k_b
  	if (nss_offload)
  		ab->nss.stats_enabled = 1;
  
