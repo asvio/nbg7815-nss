@@ -1,0 +1,10 @@
+--- b/crypto/algapi.c
++++ a/crypto/algapi.c
+@@ -217,7 +217,6 @@
+ 		}
+ 
+ 		if (!strcmp(q->cra_driver_name, alg->cra_name) ||
+-		    !strcmp(q->cra_driver_name, alg->cra_driver_name) ||
+ 		    !strcmp(q->cra_name, alg->cra_driver_name))
+ 			goto err;
+ 	}
