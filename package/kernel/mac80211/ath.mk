@@ -70,6 +70,7 @@ config-$(CONFIG_ATH11K_NSS_SUPPORT) += ATH11K_NSS_SUPPORT
 config-$(CONFIG_ATH11K_NSS_MESH_SUPPORT) += ATH11K_NSS_MESH_SUPPORT
 config-$(CONFIG_ATH11K_DEBUGFS_STA) += ATH11K_DEBUGFS_STA
 config-$(CONFIG_ATH11K_DEBUGFS_HTT_STATS) += ATH11K_DEBUGFS_HTT_STATS
+config-$(CONFIG_ATH11K_NSS_MESH_SUPPORT) += ATH11K_NSS_MESH_SUPPORT
 
 config-$(call config_package,ath9k-htc) += ATH9K_HTC
 config-$(call config_package,ath10k) += ATH10K ATH10K_PCI
@@ -347,6 +348,7 @@ define KernelPackage/ath11k/config
 
       config ATH11K_DEBUGFS_STA
                bool "Enable ath11k station statistics"
+               depends on PACKAGE_kmod-ath11k
                depends on PACKAGE_MAC80211_DEBUGFS
                default y
                help
@@ -354,6 +356,7 @@ define KernelPackage/ath11k/config
 
       config ATH11K_DEBUGFS_HTT_STATS
                bool "Enable ath11k HTT statistics"
+               depends on PACKAGE_kmod-ath11k
                depends on PACKAGE_MAC80211_DEBUGFS
                default y
                help
