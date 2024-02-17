@@ -302,7 +302,7 @@ define Device/mediatek_mt7622-rfb1-ubi
                 check-size $$$$(IMAGE_SIZE)
   IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
 endef
-TARGET_DEVICES += mediatek_mt7622-rfb1-ubi
+# TARGET_DEVICES += mediatek_mt7622-rfb1-ubi
 
 define Device/netgear_wax206
   $(Device/dsa-migration)
@@ -466,4 +466,4 @@ define Device/xiaomi_redmi-router-ax6s
   IMAGE/factory.bin := append-kernel | pad-to $$(KERNEL_SIZE) | append-ubi
   IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
 endef
-TARGET_DEVICES += xiaomi_redmi-router-ax6s
+# TARGET_DEVICES += xiaomi_redmi-router-ax6s

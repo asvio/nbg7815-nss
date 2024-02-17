@@ -50,17 +50,22 @@
 		compatible = "gpio-leds";
 
 		status_led: led-0 {
-			label = "green:status";
+			function = LED_FUNCTION_STATUS;
+			color = <LED_COLOR_ID_GREEN>;
 			gpios = <&pio 19 GPIO_ACTIVE_HIGH>;
 		};
 
 		led-1 {
-			label = "blue:wlan2g";
+			function = LED_FUNCTION_WLAN;
+			color = <LED_COLOR_ID_BLUE>;
+			function-enumerator = <1>;
 			gpios = <&pio 1 GPIO_ACTIVE_HIGH>;
 		};
 
 		led-2 {
-			label = "blue:wlan5g";
+			function = LED_FUNCTION_WLAN;
+			color = <LED_COLOR_ID_BLUE>;
+			function-enumerator = <2>;
 			gpios = <&pio 2 GPIO_ACTIVE_HIGH>;
 		};
 	};
@@ -422,6 +427,11 @@
 	};
 
 	usb_ngff_pins: usb-ngff-pins {
+		ngff-gnss-off {
+			pins = "GPIO_6";
+			drive-strength = <8>;
+			mediatek,pull-up-adv = <1>;
+		};
 		ngff-pe-rst {
 			pins = "GPIO_7";
 			drive-strength = <8>;
@@ -439,6 +449,11 @@
 		};
 		ngff-rst {
 			pins = "GPIO_10";
+			drive-strength = <8>;
+			mediatek,pull-up-adv = <1>;
+		};
+		ngff-coex {
+			pins = "SPI1_CS";
 			drive-strength = <8>;
 			mediatek,pull-up-adv = <1>;
 		};
@@ -507,13 +522,13 @@
 
 			partition@0 {
 				label = "bl2";
-				reg = <0x00000 0x100000>;
+				reg = <0x0 0x200000>;
 				read-only;
 			};
 
-			partition@100000 {
+			partition@200000 {
 				label = "ubi";
-				reg = <0x100000 0x7f00000>;
+				reg = <0x200000 0x7e00000>;
 				compatible = "linux,ubi";
 
 				volumes {
@@ -529,7 +544,8 @@
 &spi1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&spic_pins>;
-	status = "okay";
+	/* conflicts with M.2 pin */
+	status = "disabled";
 };
 
 &ssusb {
