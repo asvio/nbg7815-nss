@@ -42,6 +42,13 @@ case "$FIRMWARE" in
 		ath11k_remove_regdomain
 		ath11k_set_macflag
 		;;
+	netgear,rax120v2)
+		caldata_extract "0:art" 0x1000 0x20000
+		ath11k_patch_mac $(mtd_get_mac_binary boarddata1 0xc) 0
+		ath11k_patch_mac $(mtd_get_mac_binary boarddata1 0x0) 1
+		ath11k_patch_mac $(mtd_get_mac_binary boarddata1 0x6) 2
+		ath11k_set_macflag
+		;;
 	prpl,haze|\
 	spectrum,sax1v1k)
 		caldata_extract_mmc "0:ART" 0x1000 0x20000
