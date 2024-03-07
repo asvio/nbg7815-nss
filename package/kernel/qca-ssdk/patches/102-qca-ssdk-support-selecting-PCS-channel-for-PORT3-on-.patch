@@ -32,7 +32,7 @@ Signed-off-by: Mantas Pucka <mantas@8devices.com>
  } ssdk_dt_cfg;
  
  #define SSDK_MAX_NR_ETH 6
-@@ -160,6 +161,7 @@ a_uint32_t ssdk_device_id_get(a_uint32_t
+@@ -162,6 +163,7 @@ a_uint32_t ssdk_device_id_get(a_uint32_t
  struct device_node *ssdk_dts_node_get(a_uint32_t dev_id);
  struct clk *ssdk_dts_essclk_get(a_uint32_t dev_id);
  struct clk *ssdk_dts_cmnclk_get(a_uint32_t dev_id);
@@ -62,7 +62,7 @@ Signed-off-by: Mantas Pucka <mantas@8devices.com>
  					cppe_port_mux_ctrl.bf.port4_pcs_sel =
 --- a/src/adpt/hppe/adpt_hppe_uniphy.c
 +++ b/src/adpt/hppe/adpt_hppe_uniphy.c
-@@ -1152,9 +1152,6 @@ __adpt_hppe_uniphy_psgmii_mode_set(a_uin
+@@ -1122,9 +1122,6 @@ __adpt_hppe_uniphy_psgmii_mode_set(a_uin
  {
  	a_uint32_t i;
  	sw_error_t rv = SW_OK;
@@ -72,7 +72,7 @@ Signed-off-by: Mantas Pucka <mantas@8devices.com>
  
  	union uniphy_mode_ctrl_u uniphy_mode_ctrl;
  
-@@ -1164,9 +1161,7 @@ __adpt_hppe_uniphy_psgmii_mode_set(a_uin
+@@ -1134,9 +1131,7 @@ __adpt_hppe_uniphy_psgmii_mode_set(a_uin
  	SSDK_DEBUG("uniphy %d is psgmii mode\n", uniphy_index);
  #if defined(CPPE)
  	if (adpt_ppe_type_get(dev_id) == CPPE_TYPE) {
@@ -98,8 +98,7 @@ Signed-off-by: Mantas Pucka <mantas@8devices.com>
 +
  #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
  static void ssdk_dt_parse_mac_mode(a_uint32_t dev_id,
- 		struct device_node *switch_node, ssdk_init_cfg *cfg)
-@@ -305,6 +312,25 @@ static void ssdk_dt_parse_mac_mode(a_uin
+@@ -306,6 +313,25 @@ static void ssdk_dt_parse_mac_mode(a_uin
  
  	return;
  }
@@ -125,7 +124,7 @@ Signed-off-by: Mantas Pucka <mantas@8devices.com>
  #ifdef IN_UNIPHY
  static void ssdk_dt_parse_uniphy(a_uint32_t dev_id)
  {
-@@ -1291,6 +1317,7 @@ sw_error_t ssdk_dt_parse(ssdk_init_cfg *
+@@ -1292,6 +1318,7 @@ sw_error_t ssdk_dt_parse(ssdk_init_cfg *
  	rv = ssdk_dt_parse_access_mode(switch_node, ssdk_dt_priv);
  	SW_RTN_ON_ERROR(rv);
  	ssdk_dt_parse_mac_mode(*dev_id, switch_node, cfg);
