@@ -1,6 +1,6 @@
 --- a/src/adpt/adpt.c
 +++ b/src/adpt/adpt.c
-@@ -399,11 +399,6 @@ sw_error_t adpt_init(a_uint32_t dev_id,
+@@ -394,11 +394,6 @@ sw_error_t adpt_init(a_uint32_t dev_id,
  #endif
  #endif
  #if defined(HPPE)
@@ -42,4 +42,3 @@
 +fal_eg_trans_filter_bypass_en_get(a_uint32_t dev_id, a_uint32_t* enable)
  {
      sw_error_t rv;
- 
