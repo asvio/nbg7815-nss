@@ -516,7 +516,8 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
  		.num_vdevs_peers = ath11k_vdevs_peers,
  	},
  	{
-@@ -356,7 +357,6 @@ static struct ath11k_hw_params ath11k_hw
+ 		.name = "qca6390 hw2.0",
+@@ -355,7 +356,6 @@ static struct ath11k_hw_params ath11k_hw
  		.supports_regdb = false,
  		.fix_l1ss = true,
  		.credit_flow = false,
@@ -524,7 +525,7 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
  		.hal_params = &ath11k_hw_hal_params_ipq8074,
  		.supports_dynamic_smps_6ghz = true,
  		.alloc_cacheable_memory = true,
-@@ -381,6 +381,8 @@ static struct ath11k_hw_params ath11k_hw
+@@ -380,6 +380,8 @@ static struct ath11k_hw_params ath11k_hw
  		.tx_ring_size = DP_TCL_DATA_RING_SIZE,
  		.smp2p_wow_exit = false,
  		.support_fw_mac_sequence = false,
@@ -533,7 +534,7 @@ Signed-off-by: P Praneesh <ppranees@codeaurora.org>
  	},
  	{
  		.name = "wcn6855 hw2.0",
-@@ -2145,6 +2147,9 @@ int ath11k_core_pre_init(struct ath11k_b
+@@ -2143,6 +2145,9 @@ int ath11k_core_pre_init(struct ath11k_b
  	if (nss_offload)
  		ab->nss.stats_enabled = 1;
  

@@ -228,15 +228,6 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  static struct ath11k_hw_params ath11k_hw_params[] = {
  	{
  		.hw_rev = ATH11K_HW_IPQ8074,
-@@ -95,7 +97,7 @@ static struct ath11k_hw_params ath11k_hw
- 		.coldboot_cal_mm = false,
- 		.coldboot_cal_ftm = false,
- 		.cbcal_restart_fw = true,
--		.fw_mem_mode = 0,
-+		.fw_mem_mode = ATH11K_QMI_TARGET_MEM_MODE,
- 		.num_vdevs = 16 + 1,
- 		.num_peers = 512,
- 		.supports_suspend = false,
 @@ -127,6 +129,7 @@ static struct ath11k_hw_params ath11k_hw
  		.tcl_ring_retry = true,
  		.tx_ring_size = DP_TCL_DATA_RING_SIZE,
