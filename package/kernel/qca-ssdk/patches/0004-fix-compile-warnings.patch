@@ -43,14 +43,3 @@
  {
      sw_error_t rv;
  
---- a/Makefile
-+++ b/Makefile
-@@ -27,7 +27,7 @@ all: $(BIN_DIR) kslib
- # 			LNX Modules-Style Makefile
- ####################################################################
- modules: $(BIN_DIR) kslib_c
--	mkdir -p ./temp/;cp * ./temp -a;cd ./temp;cp ../Makefile.modules ./Makefile;
-+	mkdir -p ./temp/;cp app config include ko_Makefile make Makefile.modules src ./temp -a;cd ./temp;cp ../Makefile.modules ./Makefile;
- 	make -C $(SYS_PATH) M=$(PRJ_PATH)/temp $(LNX_MAKEOPTS) modules
- 	cp $(PRJ_PATH)/temp/Module.symvers $(PRJ_PATH)/Module.symvers;
- 	cp temp/*.ko build/bin;
