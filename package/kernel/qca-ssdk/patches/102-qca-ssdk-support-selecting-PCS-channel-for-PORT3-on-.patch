@@ -24,7 +24,7 @@ Signed-off-by: Mantas Pucka <mantas@8devices.com>
 
 --- a/include/init/ssdk_dts.h
 +++ b/include/init/ssdk_dts.h
-@@ -99,6 +99,7 @@ typedef struct
+@@ -101,6 +101,7 @@ typedef struct
  	a_uint32_t emu_chip_ver; /*only valid when is_emulation is true*/
  	a_uint32_t clk_mode;
  	a_uint32_t pcie_hw_base;
@@ -92,10 +92,11 @@ Signed-off-by: Mantas Pucka <mantas@8devices.com>
 +a_uint32_t ssdk_dts_port3_pcs_channel_get(a_uint32_t dev_id)
 +{
 +	ssdk_dt_cfg* cfg = ssdk_dt_global.ssdk_dt_switch_nodes[dev_id];
-+
++	
 +	return cfg->port3_pcs_channel;
 +}
 +
+ #ifndef BOARD_AR71XX
  #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
  static void ssdk_dt_parse_mac_mode(a_uint32_t dev_id,
 @@ -306,6 +313,25 @@ static void ssdk_dt_parse_mac_mode(a_uin
@@ -108,7 +109,7 @@ Signed-off-by: Mantas Pucka <mantas@8devices.com>
 +{
 +	const __be32 *port3_pcs_channel;
 +	a_uint32_t len = 0;
-+
++	
 +	port3_pcs_channel = of_get_property(switch_node, "port3_pcs_channel", &len);
 +	if (!port3_pcs_channel) {
 +		ssdk_dt_global.ssdk_dt_switch_nodes[dev_id]->port3_pcs_channel = 2;
@@ -132,3 +133,4 @@ Signed-off-by: Mantas Pucka <mantas@8devices.com>
  	ssdk_dt_parse_mdio(*dev_id, switch_node, cfg);
  	ssdk_dt_parse_port_bmp(*dev_id, switch_node, cfg);
  	ssdk_dt_parse_interrupt(*dev_id, switch_node);
+
