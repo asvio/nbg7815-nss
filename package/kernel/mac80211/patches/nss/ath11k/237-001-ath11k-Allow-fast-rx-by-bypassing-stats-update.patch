@@ -4,7 +4,7 @@
  	u32 max_ast_index;
  	u32 num_ast_entries;
  
-+  bool stats_disable;
++	bool stats_disable;
  	/* must be last */
  	u8 drv_priv[] __aligned(sizeof(void *));
  };
