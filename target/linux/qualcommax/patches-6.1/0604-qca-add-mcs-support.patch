@@ -538,7 +538,7 @@
  static const struct fib_rules_ops __net_initconst ipmr_rules_ops_template = {
  	.family		= RTNL_FAMILY_IPMR,
  	.rule_size	= sizeof(struct ipmr_rule),
-@@ -1193,6 +1424,11 @@ static int ipmr_mfc_delete(struct mr_tab
+@@ -1192,6 +1423,11 @@ static int ipmr_mfc_delete(struct mr_tab
  	mroute_netlink_event(mrt, c, RTM_DELROUTE);
  	mr_cache_put(&c->_c);
  
@@ -550,7 +550,7 @@
  	return 0;
  }
  
-@@ -1222,6 +1458,12 @@ static int ipmr_mfc_add(struct net *net,
+@@ -1221,6 +1457,12 @@ static int ipmr_mfc_add(struct net *net,
  		call_ipmr_mfc_entry_notifiers(net, FIB_EVENT_ENTRY_REPLACE, c,
  					      mrt->id);
  		mroute_netlink_event(mrt, c, RTM_NEWROUTE);
@@ -563,7 +563,7 @@
  		return 0;
  	}
  
-@@ -1282,6 +1524,7 @@ static void mroute_clean_tables(struct m
+@@ -1281,6 +1523,7 @@ static void mroute_clean_tables(struct m
  	struct net *net = read_pnet(&mrt->net);
  	struct mr_mfc *c, *tmp;
  	struct mfc_cache *cache;
@@ -571,7 +571,7 @@
  	LIST_HEAD(list);
  	int i;
  
-@@ -1306,10 +1549,19 @@ static void mroute_clean_tables(struct m
+@@ -1305,10 +1548,19 @@ static void mroute_clean_tables(struct m
  			rhltable_remove(&mrt->mfc_hash, &c->mnode, ipmr_rht_params);
  			list_del_rcu(&c->list);
  			cache = (struct mfc_cache *)c;

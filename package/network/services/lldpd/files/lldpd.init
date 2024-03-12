@@ -75,7 +75,8 @@ get_config_restart_hash() {
 }
 
 get_config_cid_ifaces() {
-	local _ifacesCONFIG_LLDPD_WITH_FDP
+	local _ifaces
+	config_get _ifaces 'config' "$2"
 
 	local _iface _ifnames=""
 	for _iface in $_ifaces; do
@@ -98,16 +99,8 @@ write_lldpd_conf()
 	local lldp_hostname
 	config_get lldp_hostname 'config' 'lldp_hostname' "$(cat /proc/sys/kernel/hostname)"
 
-	local ifaces
-	config_get ifaces 'config' 'interface'
-
-	local iface ifnames=""
-	for iface in $ifaces; do
-		local ifname=""
-		if network_get_device ifname "$iface" || [ -e "/sys/class/net/$iface" ]; then
-			append ifnames "${ifname:-$iface}" ","
-		fi
-	done
+	local ifnames
+	get_config_cid_ifaces ifnames "interface"
 
 	local lldp_mgmt_ip
 	config_get lldp_mgmt_ip 'config' 'lldp_mgmt_ip'
@@ -121,6 +114,10 @@ write_lldpd_conf()
 
 		local lldpmed_fast_start_tx_interval
 		config_get lldpmed_fast_start_tx_interval 'config' 'lldpmed_fast_start_tx_interval' 0
+
+		local lldp_location
+		config_get lldp_location 'config' 'lldp_location'
+
 	fi
 
 	local lldp_agenttype
@@ -140,23 +137,30 @@ write_lldpd_conf()
 
 	# Clear out the config file first
 	echo -n > "$LLDPD_CONF"
-	[ -n "$ifnames" ] && echo "configure system interface pattern" "$ifnames" >> "$LLDPD_CONF"
+	[ -n "$ifnames" ] && echo "configure system interface pattern $ifnames" >> "$LLDPD_CONF"
 	[ -n "$lldp_description" ] && echo "configure system description" "\"$lldp_description\"" >> "$LLDPD_CONF"
 	[ -n "$lldp_hostname" ] && echo "configure system hostname" "\"$lldp_hostname\"" >> "$LLDPD_CONF"
 	[ -n "$lldp_mgmt_ip" ] && echo "configure system ip management pattern" "\"$lldp_mgmt_ip\"" >> "$LLDPD_CONF"
-	[ -n "$lldp_syscapabilities" ] && echo "configure system capabilities enabled" "\"$lldp_syscapabilities\"" >> "$LLDPD_CONF"
+	[ -n "$lldp_syscapabilities" ] && echo "configure system capabilities enabled $lldp_syscapabilities" >> "$LLDPD_CONF"
 	if [ "$CONFIG_LLDPD_WITH_LLDPMED" == "y" ] && [ $lldpmed_fast_start -gt 0 ]; then
 		if [ $lldpmed_fast_start_tx_interval -gt 0 ]; then
-			echo "configure med fast-start tx-interval" "\"$lldpmed_fast_start_tx_interval\"" >> "$LLDPD_CONF"
+			echo "configure med fast-start tx-interval $lldpmed_fast_start_tx_interval" >> "$LLDPD_CONF"
 		else
-			echo "configure med fast-start" "enable" >> "$LLDPD_CONF"
+			echo "configure med fast-start enable" >> "$LLDPD_CONF"
 		fi
 	fi
+	if [ "$CONFIG_LLDPD_WITH_LLDPMED" == "y" ]; then
+		# other 'configure med xxx' statements go here
+
+		[ -n "$lldp_location" ] && echo "configure med location" "$lldp_location" >> "$LLDPD_CONF"
+
+	fi
+
 	[ -n "$lldp_agenttype" ] && echo "configure lldp agent-type" "\"$lldp_agenttype\"" >> "$LLDPD_CONF"
 	[ -n "$lldp_portidsubtype" ] && echo "configure lldp portidsubtype" "\"$lldp_portidsubtype\"" >> "$LLDPD_CONF"
 	[ -n "$lldp_platform" ] && echo "configure system platform" "\"$lldp_platform\"" >> "$LLDPD_CONF"
-	[ $lldp_tx_interval -gt 0 ] && echo "configure lldp tx-interval" "$lldp_tx_interval" >> "$LLDPD_CONF"
-	[ $lldp_tx_hold -gt 0 ] && echo "configure lldp tx-hold" "$lldp_tx_hold" >> "$LLDPD_CONF"
+	[ -n $lldp_tx_interval ] && echo "configure lldp tx-interval $lldp_tx_interval" >> "$LLDPD_CONF"
+	[ $lldp_tx_hold -gt 0 ] && echo "configure lldp tx-hold $lldp_tx_hold" >> "$LLDPD_CONF"
 
 	# Since lldpd's sysconfdir is /tmp, we'll symlink /etc/lldpd.d to /tmp/$LLDPD_CONFS_DIR
 	[ -e $LLDPD_CONFS_DIR ] || ln -s /etc/lldpd.d $LLDPD_CONFS_DIR
@@ -177,7 +181,6 @@ start_service() {
 	local enable_edp
 	local force_edp
 	local lldp_class
-	local lldp_location
 	local lldp_no_version
 	local lldpmed_no_inventory
 	local readonly_mode
@@ -206,7 +209,6 @@ start_service() {
 		config_get_bool force_edp 'config' 'force_edp' 0
 	fi
 	config_get lldp_class 'config' 'lldp_class'
-	config_get lldp_location 'config' 'lldp_location'
 	config_get_bool lldp_no_version 'config' 'lldp_no_version' 0
 	if [ "$CONFIG_LLDPD_WITH_LLDPMED" == "y" ]; then
 		config_get_bool lldpmed_no_inventory 'config' 'lldpmed_no_inventory' 0
@@ -261,7 +263,7 @@ start_service() {
 
 	if [ "$CONFIG_LLDPD_WITH_FDP" == "y" ] && [ $enable_fdp -gt 0 ]; then
 		if [ $force_fdp -gt 0 ]; then
-			# FDP enbled and forced
+			# FDP enabled and forced
 			procd_append_param command '-ff'
 		else
 			# FDP enabled
@@ -281,16 +283,16 @@ start_service() {
 
 	if [ "$CONFIG_LLDPD_WITH_EDP" == "y" ] && [ $enable_edp -gt 0 ]; then
 		if [ $force_edp -gt 0 ]; then
-			# EDP enbled and forced
+			# EDP enabled and forced
 			procd_append_param command '-ee'
 		else
-			# EDP enbled
+			# EDP enabled
 			procd_append_param command '-e'
 		fi
 	fi
 
 	[ $readonly_mode -gt 0 ] && procd_append_param command '-r'
-	[ $lldp_no_version -gt 0 ] && procd_append_param commanpackage/network/services/lldpd/Makefile package/network/services/lldpd/files/lldpd.initd '-k'
+	[ $lldp_no_version -gt 0 ] && procd_append_param command '-k'
 	[ "$CONFIG_LLDPD_WITH_LLDPMED" == "y" ] && [ $lldpmed_no_inventory -gt 0 ] && procd_append_param command '-i'
 	[ -n "$lldp_class" ] && procd_append_param command -M "$lldp_class"
 	[ "$CONFIG_LLDPD_WITH_SNMP" == "y" ] && [ -n "$agentxsocket" ] && procd_append_param command -x -X "$agentxsocket"
@@ -298,7 +300,8 @@ start_service() {
 
     # ChassisID interfaces
 	local ifnames
-	get_config_cid_ifaces ifnames
+	get_config_cid_ifaces ifnames "cid_interface"
+
 	[ -n "$ifnames" ] && procd_append_param command -C "$ifnames"
 
     # Overwrite default configuration locations processed by lldpcli at start

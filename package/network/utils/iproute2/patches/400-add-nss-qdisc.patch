@@ -1,9 +1,9 @@
 --- a/include/uapi/linux/pkt_sched.h
 +++ b/include/uapi/linux/pkt_sched.h
 @@ -119,6 +119,251 @@ enum {
-
+ 
  #define TCA_STAB_MAX (__TCA_STAB_MAX - 1)
-
+ 
 +enum {
 +	TCA_NSS_ACCEL_MODE_NSS_FW,
 +	TCA_NSS_ACCEL_MODE_PPE,
@@ -250,18 +250,18 @@
 +
 +
  /* FIFO section */
-
+ 
  struct tc_fifo_qopt {
 --- a/tc/Makefile
 +++ b/tc/Makefile
-@@ -82,6 +82,7 @@ TCMODULES += q_etf.o
+@@ -77,6 +77,7 @@ TCMODULES += q_etf.o
  TCMODULES += q_taprio.o
  TCMODULES += q_plug.o
  TCMODULES += q_ets.o
 +TCMODULES += q_nss.o
-
+ 
  TCSO :=
- ifeq ($(TC_CONFIG_ATM),y)
+ 
 --- /dev/null
 +++ b/tc/q_nss.c
 @@ -0,0 +1,1826 @@

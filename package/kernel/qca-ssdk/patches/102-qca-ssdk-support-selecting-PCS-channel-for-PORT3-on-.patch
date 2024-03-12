@@ -133,4 +133,3 @@ Signed-off-by: Mantas Pucka <mantas@8devices.com>
  	ssdk_dt_parse_mdio(*dev_id, switch_node, cfg);
  	ssdk_dt_parse_port_bmp(*dev_id, switch_node, cfg);
  	ssdk_dt_parse_interrupt(*dev_id, switch_node);
-
