@@ -1,6 +1,6 @@
 --- a/include/linux/netdevice.h
-+++ a/include/linux/netdevice.h
-@@ -1725,6 +1725,8 @@
++++ b/include/linux/netdevice.h
+@@ -1749,6 +1749,8 @@ enum netdev_priv_flags_ext {
  	IFF_EXT_GRE_V4_TAP		= 1<<4,
  	IFF_EXT_GRE_V6_TAP		= 1<<5,
  	IFF_EXT_IFB			= 1<<6,

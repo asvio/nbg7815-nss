@@ -1,6 +1,6 @@
---- b/crypto/algapi.c
-+++ a/crypto/algapi.c
-@@ -217,7 +217,6 @@
+--- a/crypto/algapi.c
++++ b/crypto/algapi.c
+@@ -290,7 +290,6 @@ static struct crypto_larval *__crypto_re
  		}
  
  		if (!strcmp(q->cra_driver_name, alg->cra_name) ||
