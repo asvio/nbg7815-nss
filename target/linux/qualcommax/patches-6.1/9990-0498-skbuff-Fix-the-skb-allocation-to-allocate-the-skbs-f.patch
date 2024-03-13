@@ -1,0 +1,158 @@
+From 475bbd3c053a0ed73ed33e41eb7a620a01f583cb Mon Sep 17 00:00:00 2001
+From: Manish Verma <quic_maniverm@quicinc.com>
+Date: Tue, 10 Oct 2023 22:35:14 +0530
+Subject: [PATCH] [skbuff] Fix the skb allocation to allocate the skbs from the
+ SKB SLAB
+
+Due to the kmalloc_size_roundup() function added in the __alloc_skb()
+API in 6.1, this API is not allocating the SKBs from the NSS
+SKB SLAB area even when the request size is SKB_DATA_CACHE_SIZE.
+
+This change is deferring the kmalloc_size_roundup() function call after
+the SKB is allocated from the NSS SKB SLAB.
+
+Change-Id: Ic6d75d66163f677b12c915ee26afbbcb26536512
+Signed-off-by: Manish Verma <quic_maniverm@quicinc.com>
+---
+ net/core/skbuff.c | 61 +++++++++++++++++++++++++++--------------------
+ 1 file changed, 35 insertions(+), 26 deletions(-)
+
+--- a/net/core/skbuff.c
++++ b/net/core/skbuff.c
+@@ -454,41 +454,47 @@ EXPORT_SYMBOL(napi_build_skb);
+  * memory is free
+  */
+ static void *kmalloc_reserve(unsigned int *size, gfp_t flags, int node,
+-			     bool *pfmemalloc)
+-{
+-	bool ret_pfmemalloc = false;
+-	size_t obj_size;
+-	void *obj;
++ 			     bool *pfmemalloc)
++ {
++ 	void *obj;
++ 	bool ret_pfmemalloc = false;
++	unsigned int obj_size = *size;
+ 
+-	obj_size = SKB_HEAD_ALIGN(*size);
++	if (obj_size > SZ_2K && obj_size <= SKB_DATA_CACHE_SIZE) {
++		obj = kmem_cache_alloc_node(skb_data_cache,
++						flags | __GFP_NOMEMALLOC | __GFP_NOWARN,
++						node);
++		*size = SKB_DATA_CACHE_SIZE;
++		if (obj || !(gfp_pfmemalloc_allowed(flags)))
++			goto out;
++
++		/* Try again but now we are using pfmemalloc reserves */
++		ret_pfmemalloc = true;
++		obj = kmem_cache_alloc_node(skb_data_cache, flags, node);
++		goto out;
++	}
+ 
+ 	obj_size = kmalloc_size_roundup(obj_size);
+-	/* The following cast might truncate high-order bits of obj_size, this
+-	 * is harmless because kmalloc(obj_size >= 2^32) will fail anyway.
+-	 */
+-	*size = (unsigned int)obj_size;
+ 
+ 	/*
+-	 * Try a regular allocation, when that fails and we're not entitled
+-	 * to the reserves, fail.
++	 * The following cast might truncate high-order bits of obj_size, this
++	 * is harmless because kmalloc(obj_size >= 2^32) will fail anyway.
+ 	 */
+-	if (obj_size > SZ_2K && obj_size <= SKB_DATA_CACHE_SIZE)
+-		obj = kmem_cache_alloc_node(skb_data_cache,
+-						flags | __GFP_NOMEMALLOC | __GFP_NOWARN,
+-						node);
+-	else
+-		obj = kmalloc_node_track_caller(obj_size,
+-					flags | __GFP_NOMEMALLOC | __GFP_NOWARN,
+-					node);
+-	if (obj || !(gfp_pfmemalloc_allowed(flags)))
+-		goto out;
++	*size = (unsigned int)obj_size;
+ 
+-	/* Try again but now we are using pfmemalloc reserves */
+-	ret_pfmemalloc = true;
+-	if (obj_size > SZ_2K && obj_size <= SKB_DATA_CACHE_SIZE)
+-		obj = kmem_cache_alloc_node(skb_data_cache, flags, node);
+-	else
+-		obj = kmalloc_node_track_caller(obj_size, flags, node);
++ 	/*
++ 	 * Try a regular allocation, when that fails and we're not entitled
++ 	 * to the reserves, fail.
++ 	 */
++	obj = kmalloc_node_track_caller(obj_size,
++				flags | __GFP_NOMEMALLOC | __GFP_NOWARN,
++				node);
++ 	if (obj || !(gfp_pfmemalloc_allowed(flags)))
++ 		goto out;
++
++ 	/* Try again but now we are using pfmemalloc reserves */
++ 	ret_pfmemalloc = true;
++	obj = kmalloc_node_track_caller(obj_size, flags, node);
+ 
+ out:
+ 	if (pfmemalloc)
+@@ -550,10 +556,12 @@ struct sk_buff *__alloc_skb(unsigned int
+ 	 * aligned memory blocks, unless SLUB/SLAB debug is enabled.
+ 	 * Both skb->head and skb_shared_info are cache line aligned.
+ 	 */
++	size = SKB_DATA_ALIGN(size);
++	size += SKB_DATA_ALIGN(sizeof(struct skb_shared_info));
+ 	data = kmalloc_reserve(&size, gfp_mask, node, &pfmemalloc);
+ 	if (unlikely(!data))
+ 		goto nodata;
+-	/* kmalloc_size_roundup() might give us more room than requested.
++	/* kmalloc_reserve(size) might give us more room than requested.
+ 	 * Put skb_shared_info exactly at the end of allocated zone,
+ 	 * to allow max possible filling before reallocation.
+ 	 */
+@@ -644,7 +652,8 @@ struct sk_buff *__netdev_alloc_skb(struc
+ 		goto skb_success;
+ 	}
+ 
+-	len = SKB_HEAD_ALIGN(len);
++	len += SKB_DATA_ALIGN(sizeof(struct skb_shared_info));
++	len = SKB_DATA_ALIGN(len);
+ 
+ 	if (sk_memalloc_socks())
+ 		gfp_mask |= __GFP_MEMALLOC;
+@@ -744,7 +753,8 @@ struct sk_buff *__napi_alloc_skb(struct
+ 		data = page_frag_alloc_1k(&nc->page_small, gfp_mask);
+ 		pfmemalloc = NAPI_SMALL_PAGE_PFMEMALLOC(nc->page_small);
+ 	} else {
+-		len = SKB_HEAD_ALIGN(len);
++		len += SKB_DATA_ALIGN(sizeof(struct skb_shared_info));
++		len = SKB_DATA_ALIGN(len);
+ 
+ 		data = page_frag_alloc(&nc->page, len, gfp_mask);
+ 		pfmemalloc = nc->page.pfmemalloc;
+@@ -1958,6 +1968,8 @@ int pskb_expand_head(struct sk_buff *skb
+ 	if (skb_pfmemalloc(skb))
+ 		gfp_mask |= __GFP_MEMALLOC;
+ 
++	size = SKB_DATA_ALIGN(size);
++	size += SKB_DATA_ALIGN(sizeof(struct skb_shared_info));
+ 	data = kmalloc_reserve(&size, gfp_mask, NUMA_NO_NODE, NULL);
+ 	if (!data)
+ 		goto nodata;
+@@ -6333,6 +6345,8 @@ static int pskb_carve_inside_header(stru
+ 	if (skb_pfmemalloc(skb))
+ 		gfp_mask |= __GFP_MEMALLOC;
+ 
++	size = SKB_DATA_ALIGN(size);
++	size += SKB_DATA_ALIGN(sizeof(struct skb_shared_info));
+ 	data = kmalloc_reserve(&size, gfp_mask, NUMA_NO_NODE, NULL);
+ 	if (!data)
+ 		return -ENOMEM;
+@@ -6449,6 +6463,8 @@ static int pskb_carve_inside_nonlinear(s
+ 	if (skb_pfmemalloc(skb))
+ 		gfp_mask |= __GFP_MEMALLOC;
+ 
++	size = SKB_DATA_ALIGN(size);
++	size += SKB_DATA_ALIGN(sizeof(struct skb_shared_info));
+ 	data = kmalloc_reserve(&size, gfp_mask, NUMA_NO_NODE, NULL);
+ 	if (!data)
+ 		return -ENOMEM;
