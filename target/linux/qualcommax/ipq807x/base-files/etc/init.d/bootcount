@@ -22,4 +22,7 @@ boot() {
 		fw_setenv boot_count 0
 	;;
 	esac
+
+	#stability increase reserved mem to avoid oom when services are used that consume large amounts of mem e.g. samba with attached usb disk etc.
+	sysctl -w vm.min_free_kbytes=65536
 }
