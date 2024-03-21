@@ -1,6 +1,6 @@
 --- a/include/linux/if_bridge.h
 +++ b/include/linux/if_bridge.h
-@@ -256,4 +256,17 @@ extern br_get_dst_hook_t __rcu *br_get_d
+@@ -281,4 +281,17 @@ extern br_get_dst_hook_t __rcu *br_get_d
  extern struct net_device *br_fdb_bridge_dev_get_and_hold(struct net_bridge *br);
  /* QCA NSS bridge-mgr support - End */
  
@@ -20,17 +20,16 @@
  #endif
 --- a/net/bridge/br_fdb.c
 +++ b/net/bridge/br_fdb.c
-@@ -256,7 +256,8 @@ static void fdb_notify(struct net_bridge
+@@ -232,6 +232,8 @@ static void fdb_notify(struct net_bridge
  		kfree_skb(skb);
  		goto errout;
  	}
--	rtnl_notify(skb, net, 0, RTNLGRP_NEIGH, NULL, GFP_ATOMIC);
-+   __br_notify(RTNLGRP_NEIGH, type, fdb); /* QCA qca-mcs support */
-+   rtnl_notify(skb, net, 0, RTNLGRP_NEIGH, NULL, GFP_ATOMIC);
++
++	__br_notify(RTNLGRP_NEIGH, type, fdb); /* QCA qca-mcs support */
+ 	rtnl_notify(skb, net, 0, RTNLGRP_NEIGH, NULL, GFP_ATOMIC);
  	return;
  errout:
- 	rtnl_set_sk_err(net, RTNLGRP_NEIGH, err);
-@@ -322,6 +323,7 @@ struct net_bridge_fdb_entry *br_fdb_find
+@@ -298,6 +300,7 @@ struct net_bridge_fdb_entry *br_fdb_find
  {
  	return fdb_find_rcu(&br->fdb_hash_tbl, addr, vid);
  }
@@ -48,7 +47,7 @@
  int br_handle_frame_finish(struct net *net, struct sock *sk, struct sk_buff *skb);
  rx_handler_func_t *br_get_rx_handler(const struct net_device *dev);
  
-@@ -2177,4 +2178,14 @@ struct nd_msg *br_is_nd_neigh_msg(struct
+@@ -2178,4 +2179,14 @@ struct nd_msg *br_is_nd_neigh_msg(struct
  #define __br_get(__hook, __default, __args ...) \
  		(__hook ? (__hook(__args)) : (__default))
  /* QCA NSS ECM support - End */
@@ -75,7 +74,7 @@
  errout:
 --- a/net/bridge/br.c
 +++ b/net/bridge/br.c
-@@ -463,6 +463,12 @@ static void __exit br_deinit(void)
+@@ -467,6 +467,12 @@ static void __exit br_deinit(void)
  	br_fdb_fini();
  }
  
@@ -90,12 +89,13 @@
  MODULE_LICENSE("GPL");
 --- a/net/bridge/br_device.c
 +++ b/net/bridge/br_device.c
-@@ -82,6 +82,12 @@ netdev_tx_t br_dev_xmit(struct sk_buff *
+@@ -82,6 +82,13 @@ netdev_tx_t br_dev_xmit(struct sk_buff *
  	if (is_broadcast_ether_addr(dest)) {
  		br_flood(br, skb, BR_PKT_BROADCAST, false, true);
  	} else if (is_multicast_ether_addr(dest)) {
 +		/* QCA qca-mcs support - Start */
-+		br_multicast_handle_hook_t *multicast_handle_hook = rcu_dereference(br_multicast_handle_hook);
++		br_multicast_handle_hook_t *multicast_handle_hook =
++		  rcu_dereference(br_multicast_handle_hook);
 +		if (!__br_get(multicast_handle_hook, true, NULL, skb))
 +			goto out;
 +		/* QCA qca-mcs support - End */
@@ -105,10 +105,11 @@
  			goto out;
 --- a/net/bridge/br_input.c
 +++ b/net/bridge/br_input.c
-@@ -23,6 +23,16 @@
- #include "br_private.h"
- #include "br_private_tunnel.h"
+@@ -30,7 +30,17 @@ br_netif_receive_skb(struct net *net, st
+ 	return netif_receive_skb(skb);
+ }
  
+-static int br_pass_frame_up(struct sk_buff *skb)
 +/* QCA qca-mcs support - Start */
 +/* Hook for external Multicast handler */
 +br_multicast_handle_hook_t __rcu *br_multicast_handle_hook __read_mostly;
@@ -119,14 +120,6 @@
 +EXPORT_SYMBOL_GPL(br_get_dst_hook);
 +/* QCA qca-mcs support - End */
 +
- static int
- br_netif_receive_skb(struct net *net, struct sock *sk, struct sk_buff *skb)
- {
-@@ -30,7 +40,7 @@ br_netif_receive_skb(struct net *net, st
- 	return netif_receive_skb(skb);
- }
- 
--static int br_pass_frame_up(struct sk_buff *skb)
 +int br_pass_frame_up(struct sk_buff *skb)
  {
  	struct net_device *indev, *brdev = BR_INPUT_SKB_CB(skb)->brdev;
@@ -139,19 +132,19 @@
  
  /* note: already called with rcu_read_lock */
  int br_handle_frame_finish(struct net *net, struct sock *sk, struct sk_buff *skb)
-@@ -84,6 +95,11 @@ int br_handle_frame_finish(struct net *n
+@@ -82,6 +93,11 @@ int br_handle_frame_finish(struct net *n
+ 	struct net_bridge_mcast *brmctx;
+ 	struct net_bridge_vlan *vlan;
  	struct net_bridge *br;
- 	u16 vid = 0;
- 	u8 state;
 +	/* QCA qca-mcs support - Start */
 +	br_multicast_handle_hook_t *multicast_handle_hook;
 +	struct net_bridge_port *pdst = NULL;
 +	br_get_dst_hook_t *get_dst_hook = rcu_dereference(br_get_dst_hook);
 +	/* QCA qca-mcs support - End */
+ 	u16 vid = 0;
+ 	u8 state;
  
- 	if (!p)
- 		goto drop;
-@@ -158,6 +174,11 @@ int br_handle_frame_finish(struct net *n
+@@ -158,6 +174,12 @@ int br_handle_frame_finish(struct net *n
  
  	switch (pkt_type) {
  	case BR_PKT_MULTICAST:
@@ -160,10 +153,11 @@
 +		if (!__br_get(multicast_handle_hook, true, p, skb))
 +			goto out;
 +		/* QCA qca-mcs support - End */
++
  		mdst = br_mdb_get(brmctx, skb, vid);
  		if ((mdst || BR_INPUT_SKB_CB_MROUTERS_ONLY(skb)) &&
  		    br_multicast_querier_exists(brmctx, eth_hdr(skb), mdst)) {
-@@ -173,8 +194,15 @@ int br_handle_frame_finish(struct net *n
+@@ -173,8 +195,15 @@ int br_handle_frame_finish(struct net *n
  		}
  		break;
  	case BR_PKT_UNICAST:
@@ -181,16 +175,17 @@
  	default:
  		break;
  	}
-@@ -189,6 +217,12 @@ int br_handle_frame_finish(struct net *n
+@@ -189,6 +218,13 @@ int br_handle_frame_finish(struct net *n
  			dst->used = now;
  		br_forward(dst->dst, skb, local_rcv, false);
  	} else {
-+       /* QCA qca-mcs support - Start */
++	  /* QCA qca-mcs support - Start */
 +		if (pdst) {
 +			br_forward(pdst, skb, local_rcv, false);
 +			goto out;
 +		}
 +		/* QCA qca-mcs support - End */
++
  		if (!mcast_hit)
  			br_flood(br, skb, pkt_type, local_rcv, false);
  		else
@@ -293,23 +288,27 @@
  #endif
 --- a/net/ipv4/ipmr.c
 +++ b/net/ipv4/ipmr.c
-@@ -113,6 +113,15 @@ static void igmpmsg_netlink_event(const
+@@ -89,6 +89,9 @@ static struct net_device *vif_dev_read(c
+ /* Special spinlock for queue of unresolved entries */
+ static DEFINE_SPINLOCK(mfc_unres_lock);
+ 
++/* spinlock for offload */
++static DEFINE_SPINLOCK(lock); /* QCA ECM qca-mcs support */
++
+ /* We return to original Alan's scheme. Hash table of resolved
+  * entries is changed only in process context and protected
+  * with weak lock mrt_lock. Queue of unresolved entries is protected
+@@ -112,6 +115,9 @@ static void mroute_netlink_event(struct
+ static void igmpmsg_netlink_event(const struct mr_table *mrt, struct sk_buff *pkt);
  static void mroute_clean_tables(struct mr_table *mrt, int flags);
  static void ipmr_expire_process(struct timer_list *t);
- 
-+/* QCA ECM qca-mcs support - Start */
-+/* spinlock for offload */
-+static DEFINE_SPINLOCK(lock);
-+
 +static struct mfc_cache *ipmr_cache_find(struct mr_table *mrt, __be32 origin,
 +					 __be32 mcastgrp);
-+static ipmr_mfc_event_offload_callback_t __rcu ipmr_mfc_event_offload_callback;
-+/* QCA ECM qca-mcs support - End */
-+
++static ipmr_mfc_event_offload_callback_t __rcu ipmr_mfc_event_offload_callback; /* QCA ECM qca-mcs support */
+ 
  #ifdef CONFIG_IP_MROUTE_MULTIPLE_TABLES
  #define ipmr_for_each_table(mrt, net)					\
- 	list_for_each_entry_rcu(mrt, &net->ipv4.mr_tables, list,	\
-@@ -223,6 +232,228 @@ static int ipmr_rule_fill(struct fib_rul
+@@ -223,6 +229,80 @@ static int ipmr_rule_fill(struct fib_rul
  	return 0;
  }
  
@@ -385,7 +384,16 @@
 +	offload_update_cb_f(group, origin, 0, NULL, IPMR_MFC_EVENT_DELETE);
 +	rcu_read_unlock();
 +}
++/* QCA ECM qca-mcs support - End */
 +
+ static const struct fib_rules_ops __net_initconst ipmr_rules_ops_template = {
+ 	.family		= RTNL_FAMILY_IPMR,
+ 	.rule_size	= sizeof(struct ipmr_rule),
+@@ -236,6 +316,156 @@ static const struct fib_rules_ops __net_
+ 	.owner		= THIS_MODULE,
+ };
+ 
++/* QCA ECM qca-mcs support - Start */
 +/* ipmr_register_mfc_event_offload_callback()
 + * Register the IPv4 Multicast update offload callback with IPMR
 + */
@@ -535,84 +543,59 @@
 +EXPORT_SYMBOL(ipmr_mfc_stats_update);
 +/* QCA ECM qca-mcs support - End */
 +
- static const struct fib_rules_ops __net_initconst ipmr_rules_ops_template = {
- 	.family		= RTNL_FAMILY_IPMR,
- 	.rule_size	= sizeof(struct ipmr_rule),
-@@ -1192,6 +1423,11 @@ static int ipmr_mfc_delete(struct mr_tab
+ static int __net_init ipmr_rules_init(struct net *net)
+ {
+ 	struct fib_rules_ops *ops;
+@@ -1191,6 +1421,10 @@ static int ipmr_mfc_delete(struct mr_tab
+ 	call_ipmr_mfc_entry_notifiers(net, FIB_EVENT_ENTRY_DEL, c, mrt->id);
  	mroute_netlink_event(mrt, c, RTM_DELROUTE);
  	mr_cache_put(&c->_c);
- 
 +	/* QCA ECM qca-mcs support - Start */
 +	/* Inform offload modules of the delete event */
 +	ipmr_sync_entry_delete(c->mfc_origin, c->mfc_mcastgrp);
 +	/* QCA ECM qca-mcs support - End */
-+
+ 
  	return 0;
  }
- 
-@@ -1221,6 +1457,12 @@ static int ipmr_mfc_add(struct net *net,
+@@ -1221,6 +1455,10 @@ static int ipmr_mfc_add(struct net *net,
  		call_ipmr_mfc_entry_notifiers(net, FIB_EVENT_ENTRY_REPLACE, c,
  					      mrt->id);
  		mroute_netlink_event(mrt, c, RTM_NEWROUTE);
-+
 +		/* QCA ECM qca-mcs support - Start */
 +		/* Inform offload modules of the update event */
 +		ipmr_sync_entry_update(mrt, c);
 +		/* QCA ECM qca-mcs support - End */
-+
  		return 0;
- 	}
- 
-@@ -1281,6 +1523,7 @@ static void mroute_clean_tables(struct m
- 	struct net *net = read_pnet(&mrt->net);
- 	struct mr_mfc *c, *tmp;
- 	struct mfc_cache *cache;
-+	u32 origin, group; /* QCA ECM qca-mcs support */
- 	LIST_HEAD(list);
- 	int i;
- 
-@@ -1305,10 +1548,19 @@ static void mroute_clean_tables(struct m
- 			rhltable_remove(&mrt->mfc_hash, &c->mnode, ipmr_rht_params);
- 			list_del_rcu(&c->list);
- 			cache = (struct mfc_cache *)c;
-+			/* QCA ECM qca-mcs support - Start */
-+			origin = cache->mfc_origin;
-+			group = cache->mfc_mcastgrp;
-+			/* QCA ECM qca-mcs support - End */
- 			call_ipmr_mfc_entry_notifiers(net, FIB_EVENT_ENTRY_DEL, cache,
- 						      mrt->id);
- 			mroute_netlink_event(mrt, cache, RTM_DELROUTE);
- 			mr_cache_put(c);
-+
-+			/* QCA ECM qca-mcs support - Start */
-+			/* Inform offload modules of the delete event */
-+			ipmr_sync_entry_delete(origin, group);
-+			/* QCA ECM qca-mcs support - End */
- 		}
  	}
  
 --- a/net/ipv6/ip6mr.c
 +++ b/net/ipv6/ip6mr.c
-@@ -102,6 +102,17 @@ static int ip6mr_rtm_dumproute(struct sk
+@@ -74,6 +74,9 @@ static struct net_device *vif_dev_read(c
+ /* Special spinlock for queue of unresolved entries */
+ static DEFINE_SPINLOCK(mfc_unres_lock);
+ 
++/* Spinlock for offload */
++static DEFINE_SPINLOCK(lock); /* QCA qca-mcs support */
++
+ /* We return to original Alan's scheme. Hash table of resolved
+    entries is changed only in process context and protected
+    with weak lock mrt_lock. Queue of unresolved entries is protected
+@@ -101,6 +104,13 @@ static int ip6mr_rtm_dumproute(struct sk
+ 			       struct netlink_callback *cb);
  static void mroute_clean_tables(struct mr_table *mrt, int flags);
  static void ipmr_expire_process(struct timer_list *t);
- 
 +/* QCA qca-mcs support - Start */
-+/* Spinlock for offload */
-+static DEFINE_SPINLOCK(lock);
-+
 +static struct mfc6_cache *ip6mr_cache_find(struct mr_table *mrt,
 +					   const struct in6_addr *origin,
 +					   const struct in6_addr *mcastgrp);
 +static ip6mr_mfc_event_offload_callback_t __rcu
 +				ip6mr_mfc_event_offload_callback;
 +/* QCA qca-mcs support - End */
-+
+ 
  #ifdef CONFIG_IPV6_MROUTE_MULTIPLE_TABLES
  #define ip6mr_for_each_table(mrt, net) \
- 	list_for_each_entry_rcu(mrt, &net->ipv6.mr6_tables, list, \
-@@ -380,6 +391,227 @@ static struct mr_table_ops ip6mr_mr_tabl
- 	.cmparg_any = &ip6mr_mr_table_ops_cmparg_any,
+@@ -375,6 +385,84 @@ static struct mfc6_cache_cmp_arg ip6mr_m
+ 	.mf6c_mcastgrp = IN6ADDR_ANY_INIT,
  };
  
 +/* QCA qca-mcs support - Start */
@@ -691,7 +674,16 @@
 +			    IP6MR_MFC_EVENT_DELETE);
 +	rcu_read_unlock();
 +}
++/* QCA qca-mcs support - End */
 +
+ static struct mr_table_ops ip6mr_mr_table_ops = {
+ 	.rht_params = &ip6mr_rht_params,
+ 	.cmparg_any = &ip6mr_mr_table_ops_cmparg_any,
+@@ -697,6 +785,151 @@ static int call_ip6mr_mfc_entry_notifier
+ 				     &mfc->_c, tb_id, &net->ipv6.ipmr_seq);
+ }
+ 
++/* QCA qca-mcs support - Start */
 +/* ip6mr_register_mfc_event_offload_callback()
 + * Register the IPv6 multicast update callback for offload modules
 + */
@@ -836,10 +828,10 @@
 +EXPORT_SYMBOL(ip6mr_mfc_stats_update);
 +/* QCA qca-mcs support - End */
 +
- static struct mr_table *ip6mr_new_table(struct net *net, u32 id)
- {
- 	struct mr_table *mrt;
-@@ -1221,6 +1453,7 @@ static int ip6mr_mfc_delete(struct mr_ta
+ /* Delete a VIF entry */
+ static int mif6_delete(struct mr_table *mrt, int vifi, int notify,
+ 		       struct list_head *head)
+@@ -1221,6 +1454,7 @@ static int ip6mr_mfc_delete(struct mr_ta
  			    int parent)
  {
  	struct mfc6_cache *c;
@@ -847,7 +839,7 @@
  
  	/* The entries are added/deleted only under RTNL */
  	rcu_read_lock();
-@@ -1229,6 +1462,12 @@ static int ip6mr_mfc_delete(struct mr_ta
+@@ -1229,6 +1463,11 @@ static int ip6mr_mfc_delete(struct mr_ta
  	rcu_read_unlock();
  	if (!c)
  		return -ENOENT;
@@ -856,15 +848,13 @@
 +	memcpy(&mc_origin, &c->mf6c_origin, sizeof(struct in6_addr));
 +	memcpy(&mc_group, &c->mf6c_mcastgrp, sizeof(struct in6_addr));
 +	/* QCA qca-mcs support - End */
-+
  	rhltable_remove(&mrt->mfc_hash, &c->_c.mnode, ip6mr_rht_params);
  	list_del_rcu(&c->_c.list);
  
-@@ -1236,6 +1475,12 @@ static int ip6mr_mfc_delete(struct mr_ta
+@@ -1236,6 +1475,11 @@ static int ip6mr_mfc_delete(struct mr_ta
  				       FIB_EVENT_ENTRY_DEL, c, mrt->id);
  	mr6_netlink_event(mrt, c, RTM_DELROUTE);
  	mr_cache_put(&c->_c);
-+
 +	/* QCA qca-mcs support - Start */
 +	/* Inform offload modules of the delete event */
 +	ip6mr_sync_entry_delete(&mc_origin, &mc_group);
@@ -873,53 +863,14 @@
  	return 0;
  }
  
-@@ -1457,6 +1702,12 @@ static int ip6mr_mfc_add(struct net *net
+@@ -1457,6 +1701,10 @@ static int ip6mr_mfc_add(struct net *net
  		call_ip6mr_mfc_entry_notifiers(net, FIB_EVENT_ENTRY_REPLACE,
  					       c, mrt->id);
  		mr6_netlink_event(mrt, c, RTM_NEWROUTE);
-+
 +		/* QCA qca-mcs support - Start */
 +		/* Inform offload modules of the update event */
 +		ip6mr_sync_entry_update(mrt, c);
 +		/* QCA qca-mcs support - End */
-+
  		return 0;
- 	}
- 
-@@ -1519,6 +1770,10 @@ static int ip6mr_mfc_add(struct net *net
- 
- static void mroute_clean_tables(struct mr_table *mrt, int flags)
- {
-+	/* QCA qca-mcs support - Start */
-+	struct mfc6_cache *cache;
-+	struct in6_addr mc_origin, mc_group;
-+	/* QCA qca-mcs support - End */
- 	struct mr_mfc *c, *tmp;
- 	LIST_HEAD(list);
- 	int i;
-@@ -1541,13 +1796,23 @@ static void mroute_clean_tables(struct m
- 			if (((c->mfc_flags & MFC_STATIC) && !(flags & MRT6_FLUSH_MFC_STATIC)) ||
- 			    (!(c->mfc_flags & MFC_STATIC) && !(flags & MRT6_FLUSH_MFC)))
- 				continue;
-+			/* QCA qca-mcs support - Start */
-+			cache = (struct mfc6_cache *)c;
-+			memcpy(&mc_origin, &cache->mf6c_origin, sizeof(struct in6_addr));
-+			memcpy(&mc_group, &cache->mf6c_mcastgrp, sizeof(struct in6_addr));
-+			/* QCA qca-mcs support - End */
- 			rhltable_remove(&mrt->mfc_hash, &c->mnode, ip6mr_rht_params);
- 			list_del_rcu(&c->list);
- 			call_ip6mr_mfc_entry_notifiers(read_pnet(&mrt->net),
- 						       FIB_EVENT_ENTRY_DEL,
--						       (struct mfc6_cache *)c, mrt->id);
--			mr6_netlink_event(mrt, (struct mfc6_cache *)c, RTM_DELROUTE);
-+						       cache, mrt->id);
-+			mr6_netlink_event(mrt, cache, RTM_DELROUTE);
- 			mr_cache_put(c);
-+
-+			/* QCA qca-mcs support - Start */
-+			/* Inform offload modules of the delete event */
-+			ip6mr_sync_entry_delete(&mc_origin, &mc_group);
-+			/* QCA qca-mcs support - End */
- 		}
  	}
  

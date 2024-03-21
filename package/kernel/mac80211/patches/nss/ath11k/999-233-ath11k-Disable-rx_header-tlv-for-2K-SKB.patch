@@ -30,19 +30,17 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  		ret = ath11k_dp_tx_htt_rx_filter_setup(ar->ab, ring_id, ar->dp.mac_id,
 --- a/drivers/net/wireless/ath/ath11k/dp.h
 +++ b/drivers/net/wireless/ath/ath11k/dp.h
-@@ -238,6 +238,11 @@ struct ath11k_pdev_dp {
+@@ -237,7 +237,8 @@ struct ath11k_pdev_dp {
+ #define DP_REO_CMD_RING_SIZE		256
  #define DP_REO_STATUS_RING_SIZE		2048
  #define DP_RXDMA_BUF_RING_SIZE		4096
- #define DP_RXDMA_REFILL_RING_SIZE	2048
-+#ifdef CPTCFG_ATH11K_MEM_PROFILE_512M
-+#define DP_RXDMA_NSS_REFILL_RING_SIZE	1816
-+#else
-+#define DP_RXDMA_NSS_REFILL_RING_SIZE	2048
-+#endif
+-#define DP_RXDMA_REFILL_RING_SIZE	2048
++#define DP_RXDMA_REFILL_RING_SIZE	ATH11K_DP_RXDMA_REFILL_RING_SIZE
++#define DP_RXDMA_NSS_REFILL_RING_SIZE	ATH11K_DP_RXDMA_NSS_REFILL_RING_SIZE
  #define DP_RXDMA_ERR_DST_RING_SIZE	1024
  #define DP_RXDMA_MON_STATUS_RING_SIZE	ATH11K_DP_RXDMA_MON_STATUS_RING_SIZE
  #define DP_RXDMA_MONITOR_BUF_RING_SIZE	ATH11K_DP_RXDMA_MONITOR_BUF_RING_SIZE
-@@ -672,7 +677,7 @@ enum htt_stats_internal_ppdu_frametype {
+@@ -672,7 +673,7 @@ enum htt_stats_internal_ppdu_frametype {
   *
   *    |31       26|25|24|23            16|15             8|7             0|
   *    |-----------------+----------------+----------------+---------------|
@@ -885,16 +883,38 @@ Signed-off-by: Ramya Gnanasekar <rgnanase@codeaurora.org>
  const struct ath11k_hw_ops wcn6855_ops = {
 --- a/drivers/net/wireless/ath/ath11k/hw.h
 +++ b/drivers/net/wireless/ath/ath11k/hw.h
-@@ -128,6 +128,8 @@ enum ath11k_bus {
+@@ -22,6 +22,11 @@
+ #define ATH11K_DP_RXDMA_MON_STATUS_RING_SIZE	512
+ #define ATH11K_DP_RXDMA_MONITOR_BUF_RING_SIZE	128
+ #define ATH11K_DP_RXDMA_MONITOR_DST_RING_SIZE	128
++#define ATH11K_DP_RXDMA_REFILL_RING_SIZE	2048
++/* 256b desc TLV + 4b(rounded) Pad + 30byte max nwifi header +
++ * 18byte mesh hdr + 8byte snap + 1500 eth payload
++ */
++#define ATH11K_DP_RXDMA_NSS_REFILL_RING_SIZE	1816
+ #else
+ /* Num VDEVS per radio */
+ #define TARGET_NUM_VDEVS(ab)	(ab->hw_params.num_vdevs_peers[ab->qmi.target_mem_mode].num_vdevs)
+@@ -33,6 +38,8 @@
+ #define ATH11K_DP_RXDMA_MON_STATUS_RING_SIZE	1024
+ #define ATH11K_DP_RXDMA_MONITOR_BUF_RING_SIZE	4096
+ #define ATH11K_DP_RXDMA_MONITOR_DST_RING_SIZE	2048
++#define ATH11K_DP_RXDMA_REFILL_RING_SIZE	2048
++#define ATH11K_DP_RXDMA_NSS_REFILL_RING_SIZE	2048
+ #endif
  
+ /* Num of peers for Single Radio mode */
+@@ -129,6 +136,9 @@ enum ath11k_bus {
  struct hal_rx_desc;
  struct hal_tcl_data_cmd;
+ 
 +struct htt_rx_ring_tlv_filter;
 +enum hal_encrypt_type;
- 
++
  struct ath11k_hw_ring_mask {
  	u8 tx[ATH11K_EXT_IRQ_GRP_NUM_MAX];
-@@ -287,6 +289,16 @@ struct ath11k_hw_ops {
+ 	u8 rx_mon_status[ATH11K_EXT_IRQ_GRP_NUM_MAX];
+@@ -287,6 +297,16 @@ struct ath11k_hw_ops {
  	u8* (*rx_desc_mpdu_start_addr2)(struct hal_rx_desc *desc);
  	u32 (*get_ring_selector)(struct sk_buff *skb);
  	u32 (*rx_desc_get_hal_mpdu_len)(struct hal_rx_mpdu_info *mpdu_info);

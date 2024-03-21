@@ -466,17 +466,26 @@
  #endif /* !(__LINUX_IF_PPPOX_H) */
 --- a/include/linux/netdevice.h
 +++ b/include/linux/netdevice.h
-@@ -1733,6 +1733,24 @@ enum netdev_priv_flags {
- 	IFF_NO_IP_ALIGN			= BIT_ULL(33),
+@@ -1762,6 +1762,36 @@ enum netdev_priv_flags {
+ 	IFF_NO_IP_ALIGN			= BIT_ULL(34),
  };
  
-+
 +/**
 + * enum netdev_priv_flags_ext - &struct net_device priv_flags_ext
 + *
 + * These flags are used to check for device type and can be
 + * set and used by the drivers
 + *
++ * @IFF_EXT_TUN_TAP: device is a TUN/TAP device
++ * @IFF_EXT_PPP_L2TPV2: device is a L2TPV2 device
++ * @IFF_EXT_PPP_L2TPV3: device is a L2TPV3 device
++ * @IFF_EXT_PPP_PPTP: device is a PPTP device
++ * @IFF_EXT_GRE_V4_TAP: device is a GRE IPv4 TAP device
++ * @IFF_EXT_GRE_V6_TAP: device is a GRE IPv6 TAP device
++ * @IFF_EXT_IFB: device is an IFB device
++ * @IFF_EXT_MAPT: device is an MAPT device
++ * @IFF_EXT_HW_NO_OFFLOAD: device is an NON Offload device
++ * @IFF_EXT_L2TPV3: device is a L2TPV3 Ethernet device
 + */
 +enum netdev_priv_flags_ext {
 +	IFF_EXT_TUN_TAP			= 1<<0,
@@ -486,21 +495,22 @@
 +	IFF_EXT_GRE_V4_TAP		= 1<<4,
 +	IFF_EXT_GRE_V6_TAP		= 1<<5,
 +	IFF_EXT_IFB			= 1<<6,
++	IFF_EXT_MAPT			= 1<<7,
++	IFF_EXT_HW_NO_OFFLOAD		= 1<<8,
++	IFF_EXT_ETH_L2TPV3		= 1<<9,
 +};
 +
  #define IFF_802_1Q_VLAN			IFF_802_1Q_VLAN
  #define IFF_EBRIDGE			IFF_EBRIDGE
  #define IFF_BONDING			IFF_BONDING
-@@ -2075,7 +2093,8 @@ struct net_device {
+@@ -2075,6 +2103,7 @@ struct net_device {
  	/* Read-mostly cache-line for fast-path access */
  	unsigned int		flags;
  	unsigned long long	priv_flags;
--	const struct net_device_ops *netdev_ops;
 +	unsigned int		priv_flags_ext;
-+   const struct net_device_ops *netdev_ops;
+ 	const struct net_device_ops *netdev_ops;
  	int			ifindex;
  	unsigned short		gflags;
- 	unsigned short		hard_header_len;
 --- a/include/linux/ppp_channel.h
 +++ b/include/linux/ppp_channel.h
 @@ -19,6 +19,10 @@
