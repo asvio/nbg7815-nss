@@ -128,7 +128,7 @@
  		debugfs_create_file("dfs_simulate_radar", 0200,
 --- a/drivers/net/wireless/ath/ath11k/mac.c
 +++ b/drivers/net/wireless/ath/ath11k/mac.c
-@@ -6148,9 +6148,9 @@ static int ath11k_mac_mgmt_tx(struct ath
+@@ -6150,9 +6150,9 @@ static int ath11k_mac_mgmt_tx(struct ath
  	 */
  	if (is_prb_rsp &&
  	    atomic_read(&ar->num_pending_mgmt_tx) > ATH11K_PRB_RSP_DROP_THRESHOLD) {
@@ -140,7 +140,7 @@
  	}
  
  	if (skb_queue_len_lockless(q) >= ATH11K_TX_MGMT_NUM_PENDING_MAX) {
-@@ -6176,9 +6176,11 @@ static void ath11k_mac_op_tx(struct ieee
+@@ -6178,9 +6178,11 @@ static void ath11k_mac_op_tx(struct ieee
  	struct ath11k_vif *arvif = ath11k_vif_to_arvif(vif);
  	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *)skb->data;
  	struct ieee80211_key_conf *key = info->control.hw_key;
@@ -152,7 +152,7 @@
  	int ret;
  
  	memset(skb_cb, 0, sizeof(*skb_cb));
-@@ -6192,12 +6194,21 @@ static void ath11k_mac_op_tx(struct ieee
+@@ -6194,12 +6196,21 @@ static void ath11k_mac_op_tx(struct ieee
  	if (info_flags & IEEE80211_TX_CTL_HW_80211_ENCAP) {
  		skb_cb->flags |= ATH11K_SKB_HW_80211_ENCAP;
  	} else if (ieee80211_is_mgmt(hdr->frame_control)) {

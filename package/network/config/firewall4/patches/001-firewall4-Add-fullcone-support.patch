@@ -26,17 +26,17 @@ Renew: ZiMing Mo <msylgj@immortalwrt.org>
  	option forward		REJECT
  # Uncomment this line to disable ipv6 rules
  #	option disable_ipv6	1
-+	option flow_offloading 1
-+	option fullcone 1
++	option flow_offloading 0
++	option fullcone 0
 +	option fullcone6 0
-
+ 
  config zone
  	option name		lan
 --- a/root/usr/share/firewall4/templates/ruleset.uc
 +++ b/root/usr/share/firewall4/templates/ruleset.uc
-@@ -316,6 +316,12 @@ table inet fw4 {
+@@ -327,6 +327,12 @@ table inet fw4 {
  {%   for (let redirect in fw4.redirects(`dstnat_${zone.name}`)): %}
- 		{%+ include("redirect.uc", { fw4, redirect }) %}
+ 		{%+ include("redirect.uc", { fw4, zone, redirect }) %}
  {%   endfor %}
 +{%   if (zone.masq && fw4.default_option("fullcone")): %}
 +		{%+ include("zone-fullcone.uc", { fw4, zone, family: 4, direction: "dstnat" }) %}
@@ -46,10 +46,10 @@ Renew: ZiMing Mo <msylgj@immortalwrt.org>
 +{%   endif %}
  {%   fw4.includes('chain-append', `dstnat_${zone.name}`) %}
  	}
-
-@@ -326,20 +326,26 @@ table inet fw4 {
+ 
+@@ -337,20 +343,26 @@ table inet fw4 {
  {%   for (let redirect in fw4.redirects(`srcnat_${zone.name}`)): %}
- 		{%+ include("redirect.uc", { fw4, redirect }) %}
+ 		{%+ include("redirect.uc", { fw4, zone, redirect }) %}
  {%   endfor %}
 -{%   if (zone.masq): %}
 +{%   if (zone.masq && !fw4.default_option("fullcone")): %}
@@ -75,7 +75,7 @@ Renew: ZiMing Mo <msylgj@immortalwrt.org>
 +{%   endif %}
  {%   fw4.includes('chain-append', `srcnat_${zone.name}`) %}
  	}
-
+ 
 --- /dev/null
 +++ b/root/usr/share/firewall4/templates/zone-fullcone.uc
 @@ -0,0 +1,4 @@
@@ -91,10 +91,10 @@ Renew: ZiMing Mo <msylgj@immortalwrt.org>
  const fs = require("fs");
  const uci = require("uci");
  const ubus = require("ubus");
-@@ -428,6 +430,25 @@ function nft_try_hw_offload(devices) {
+@@ -489,6 +491,25 @@ function nft_try_hw_offload(devices) {
  	return (rc == 0);
  }
-
+ 
 +function nft_try_fullcone() {
 +	let nft_test =
 +		'add table inet fw4-fullcone-test; ' +
@@ -114,13 +114,13 @@ Renew: ZiMing Mo <msylgj@immortalwrt.org>
 +	return ok;
 +}
 +
-
+ 
  return {
  	read_kernel_version: function() {
-@@ -778,6 +799,18 @@ return {
+@@ -832,6 +853,18 @@ return {
  			warn(`[!] ${msg}\n`);
  	},
-
+ 
 +	myinfo: function(fmt, ...args) {
 +		if (getenv("QUIET"))
 +			return;
@@ -136,10 +136,10 @@ Renew: ZiMing Mo <msylgj@immortalwrt.org>
  	get: function(sid, opt) {
  		return this.cursor.get("firewall", sid, opt);
  	},
-@@ -959,6 +992,21 @@ return {
+@@ -1013,6 +1046,21 @@ return {
  		}
  	},
-
+ 
 +	myinfo_section: function(s, msg) {
 +		if (s[".name"]) {
 +			if (s.name)
@@ -158,7 +158,7 @@ Renew: ZiMing Mo <msylgj@immortalwrt.org>
  	parse_policy: function(val) {
  		return this.parse_enum(val, [
  			"accept",
-@@ -1398,6 +1446,7 @@ return {
+@@ -1452,6 +1500,7 @@ return {
  			"dnat",
  			"snat",
  			"masquerade",
@@ -166,19 +166,19 @@ Renew: ZiMing Mo <msylgj@immortalwrt.org>
  			"accept",
  			"reject",
  			"drop"
-@@ -1865,6 +1914,8 @@ return {
+@@ -1923,6 +1972,8 @@ return {
  		}
-
+ 
  		let defs = this.parse_options(data, {
 +			fullcone: [ "bool", "0" ],
 +			fullcone6: [ "bool", "0" ],
  			input: [ "policy", "drop" ],
  			output: [ "policy", "drop" ],
  			forward: [ "policy", "drop" ],
-@@ -1899,6 +1950,11 @@ return {
-
+@@ -1957,6 +2008,11 @@ return {
+ 
  		delete defs.syn_flood;
-
+ 
 +		if (!nft_try_fullcone()) {
 +			delete defs.fullcone;
 +			warn("nft_try_fullcone failed, disable fullcone globally\n");
@@ -186,11 +186,11 @@ Renew: ZiMing Mo <msylgj@immortalwrt.org>
 +
  		this.state.defaults = defs;
  	},
-
-@@ -2124,10 +2180,23 @@ return {
+ 
+@@ -2182,10 +2238,23 @@ return {
  		zone.related_subnets = related_subnets;
  		zone.related_physdevs = related_physdevs;
-
+ 
 -		if (zone.masq || zone.masq6)
 +		if (zone.masq) {
  			zone.dflags.snat = true;
@@ -207,9 +207,9 @@ Renew: ZiMing Mo <msylgj@immortalwrt.org>
 +				this.myinfo_section(data, "IPv6 fullcone enabled for zone '" + zone.name + "'");
 +			}
 +		}
-
+ 
 -		if ((zone.auto_helper && !(zone.masq || zone.masq6)) || length(zone.helper)) {
 +		if ((zone.auto_helper && !(zone.masq || zone.masq6 || this.state.defaults.fullcone || this.state.defaults.fullcone6)) || length(zone.helper)) {
  			zone.dflags.helper = true;
-
+ 
  			for (let helper in (length(zone.helper) ? zone.helper : this.state.helpers)) {

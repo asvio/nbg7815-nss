@@ -23,9 +23,9 @@ define Package/firewall4
   TITLE:=OpenWrt 4th gen firewall
   DEPENDS:= \
 	+kmod-nft-core +kmod-nft-fib +kmod-nft-offload \
-	+kmod-nft-nat +kmod-nft-fullcone \
-	+nftables-json \
-	+ucode +ucode-mod-fs +ucode-mod-ubus +ucode-mod-uci
+	+kmod-nft-nat +nftables-json \
+	+ucode +ucode-mod-fs +ucode-mod-ubus +ucode-mod-uci \
+	+PACKAGE_kmod-nft-fullcone:kmod-nft-fullcone
   EXTRA_DEPENDS:=ucode (>=2022.03.22)
   PROVIDES:=uci-firewall
 endef
