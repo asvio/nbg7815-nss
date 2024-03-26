@@ -806,8 +806,6 @@
  	u8 tcp_max_retrans;
  	u8 tcp_ignore_invalid_rst;
  #if IS_ENABLED(CONFIG_NF_FLOW_TABLE)
-diff --git a/net/netfilter/nf_conntrack_proto_tcp.c b/net/netfilter/nf_conntrack_proto_tcp.c
-index 3ac1af6f59fc..0a2badd52b54 100644
 --- a/net/netfilter/nf_conntrack_proto_tcp.c
 +++ b/net/netfilter/nf_conntrack_proto_tcp.c
 @@ -513,11 +513,15 @@ tcp_in_window(struct nf_conn *ct, enum ip_conntrack_dir dir,
@@ -845,8 +843,6 @@ index 3ac1af6f59fc..0a2badd52b54 100644
  	/* If it's non-zero, we turn off RST sequence number check */
  	tn->tcp_ignore_invalid_rst = 0;
  
-diff --git a/net/netfilter/nf_conntrack_standalone.c b/net/netfilter/nf_conntrack_standalone.c
-index e9654169b005..84b8e28f0782 100644
 --- a/net/netfilter/nf_conntrack_standalone.c
 +++ b/net/netfilter/nf_conntrack_standalone.c
 @@ -637,6 +637,7 @@ enum nf_ct_sysctl_index {
