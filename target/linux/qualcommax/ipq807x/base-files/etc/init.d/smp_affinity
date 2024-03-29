@@ -21,14 +21,18 @@ enable_affinity_ipq807x() {
 
 	# assign 3 ppdu mac interrupts to last 3 cores
 	set_affinity 'ppdu-end-interrupts-mac1' 2
-	set_affinity 'ppdu-end-interrupts-mac2' 4
-	set_affinity 'ppdu-end-interrupts-mac3' 8
+	set_affinity 'ppdu-end-interrupts-mac2' 8
+	set_affinity 'ppdu-end-interrupts-mac3' 4
 
 	# assign lan/wan to core 4
 	set_affinity 'edma_txcmpl' 8
 	set_affinity 'edma_rxfill' 8
 	set_affinity 'edma_rxdesc' 8
 	set_affinity 'edma_misc' 8
+
+	# assign usb1 to core 2
+	set_affinity 'xhci-hcd:usb1' 2
+
 }
 
 boot() {

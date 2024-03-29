@@ -2995,7 +2995,7 @@ Signed-off-by: Sriram R <srirrama@codeaurora.org>
  int ath11k_dp_pdev_reo_setup(struct ath11k_base *ab);
 --- a/drivers/net/wireless/ath/ath11k/mac.c
 +++ b/drivers/net/wireless/ath/ath11k/mac.c
-@@ -6367,6 +6367,16 @@ static int ath11k_mac_op_start(struct ie
+@@ -6369,6 +6369,16 @@ static int ath11k_mac_op_start(struct ie
  		goto err;
  	}
  
