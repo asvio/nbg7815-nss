@@ -163,8 +163,8 @@ Signed-off-by: Robert Marko <robimarko@gmail.com>
 -				dp_priv->miibus->id, dp_priv->phy_mdio_addr);
 -
 +	if (dp_priv->phy_node) {
-		SET_NETDEV_DEV(netdev, &pdev->dev);
-
+ 		SET_NETDEV_DEV(netdev, &pdev->dev);
+ 
 -		dp_priv->phydev = phy_connect(netdev, phy_id,
 -				&nss_dp_adjust_link,
 -				dp_priv->phy_mii_type);
