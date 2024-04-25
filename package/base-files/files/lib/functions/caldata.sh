@@ -211,7 +211,6 @@ ath11k_remove_regdomain() {
 	done
 }
 
-
 ath11k_set_macflag() {
 	local target=$1
 
