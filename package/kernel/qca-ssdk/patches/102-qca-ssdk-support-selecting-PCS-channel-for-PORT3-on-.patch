@@ -29,7 +29,7 @@ Signed-off-by: Mantas Pucka <mantas@8devices.com>
  	a_uint32_t clk_mode;
  	a_uint32_t pcie_hw_base;
 +	a_uint32_t port3_pcs_channel;
-	led_ctrl_pattern_t source_pattern[SSDK_MAX_PORT_NUM][PORT_LED_SOURCE_MAX];
+ 	led_ctrl_pattern_t source_pattern[SSDK_MAX_PORT_NUM][PORT_LED_SOURCE_MAX];
  } ssdk_dt_cfg;
  
 @@ -161,6 +162,7 @@ a_uint32_t ssdk_device_id_get(a_uint32_t
@@ -98,7 +98,7 @@ Signed-off-by: Mantas Pucka <mantas@8devices.com>
 +
  #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
  static void ssdk_dt_parse_mac_mode(a_uint32_t dev_id,
-		struct device_node *switch_node, ssdk_init_cfg *cfg)
+ 		struct device_node *switch_node, ssdk_init_cfg *cfg)
 @@ -305,6 +312,25 @@ static void ssdk_dt_parse_mac_mode(a_uin
  
  	return;
