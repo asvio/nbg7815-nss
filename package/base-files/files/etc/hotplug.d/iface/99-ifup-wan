@@ -1,0 +1,15 @@
+#!/bin/sh
+[ "$ACTION" = "ifup" -a "$INTERFACE" = "wan" ] && {
+    logger "iface wan up detected..."
+    echo 0 > /sys/class/leds/q1:channel0/device/run_engine
+    echo "0040008001000009001200249F8140009F8240329F804000E10009FF08FF09FF08FFA0069F8440009F8540329F834000E002600060006000600008FF09FFA006" > /sys/class/leds/q1:channel0/device/engine1_load
+    echo 1 > /sys/class/leds/q1:channel0/device/run_engine
+}
+
+[ "$ACTION" = "ifdown" -a "$INTERFACE" = "wan" ] && {
+    logger "iface down detected..."
+    echo 0 > /sys/class/leds/q1:channel0/device/run_engine
+    echo "01B600929F8040009F8140FFC000" > /sys/class/leds/q1:channel0/device/engine1_load
+    echo 1 > /sys/class/leds/q1:channel0/device/run_engine
+}
+exit 0
