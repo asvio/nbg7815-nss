@@ -23,13 +23,13 @@ PKG_CONFIG_DEPENDS += \
 sanitize = $(call tolower,$(subst _,-,$(subst $(space),-,$(1))))
 
 VERSION_NUMBER:=$(call qstrip,$(CONFIG_VERSION_NUMBER))
-VERSION_NUMBER:=$(if $(VERSION_NUMBER),$(VERSION_NUMBER),24.10.0-rc2)
+VERSION_NUMBER:=$(if $(VERSION_NUMBER),$(VERSION_NUMBER),NBG7815-24.10.0-rc2-NSS)
 
 VERSION_CODE:=$(call qstrip,$(CONFIG_VERSION_CODE))
-VERSION_CODE:=$(if $(VERSION_CODE),$(VERSION_CODE),r28161-ea17e958b9)
+VERSION_CODE:=$(if $(VERSION_CODE),$(VERSION_CODE),r28161+168-ea17e958b9-cedcfc1f5422)
 
 VERSION_REPO:=$(call qstrip,$(CONFIG_VERSION_REPO))
-VERSION_REPO:=$(if $(VERSION_REPO),$(VERSION_REPO),https://downloads.openwrt.org/releases/24.10.0-rc2)
+VERSION_REPO:=$(if $(VERSION_REPO),$(VERSION_REPO),https://github.com/asvio/nbg7815-nss/releases/tag/24.10.0-rc2-nss)
 
 VERSION_DIST:=$(call qstrip,$(CONFIG_VERSION_DIST))
 VERSION_DIST:=$(if $(VERSION_DIST),$(VERSION_DIST),OpenWrt)
