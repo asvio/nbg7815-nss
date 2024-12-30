@@ -2,13 +2,14 @@ include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/version.mk
 
 PKG_NAME:=ipq-wifi
+
 PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL=$(PROJECT_GIT)/project/firmware/qca-wireless.git
-PKG_SOURCE_DATE:=2024-10-08
-PKG_SOURCE_VERSION:=dcbab62272bf5cab2ed857bc655d240970e14f2a
-PKG_MIRROR_HASH:=e53a3872abf5e35db6baaceb56e6ffa289f8dd9b6226cf8a4d5b87b541179175
+PKG_SOURCE_URL=https://github.com/asvio/firmware_qca-wireless.git
+PKG_SOURCE_DATE:=2024-10-24
+PKG_SOURCE_VERSION:=b4daa6028956dbe53386ffafb11d1b8468b3d62a
+PKG_MIRROR_HASH:=e911e4bc53653c3ea2a5f683e4e9e6365d8d0f4e227e40ccd18bc912b277937f
 PKG_FLAGS:=nonshared
 
 include $(INCLUDE_DIR)/package.mk
