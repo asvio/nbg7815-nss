@@ -503,7 +503,7 @@ Signed-off-by: Lee Jones <lee@kernel.org>
  
  static int lp55xx_parse_common_child(struct device_node *np,
  				     struct lp55xx_led_config *cfg,
-@@ -690,9 +685,9 @@ static int lp55xx_parse_logical_led(stru
+@@ -687,9 +682,9 @@ static int lp55xx_parse_logical_led(stru
  	return ret;
  }
  
@@ -516,7 +516,7 @@ Signed-off-by: Lee Jones <lee@kernel.org>
  {
  	struct device_node *child;
  	struct lp55xx_platform_data *pdata;
-@@ -749,7 +744,81 @@ struct lp55xx_platform_data *lp55xx_of_p
+@@ -746,7 +741,81 @@ struct lp55xx_platform_data *lp55xx_of_p
  
  	return pdata;
  }
