@@ -2,3 +2,5 @@ src-git packages https://git.openwrt.org/feed/packages.git^d8cd30f4e281d6853b3de
 src-git luci https://git.openwrt.org/project/luci.git^2ac26e56cc55102cb10e7b0867c2b78e0f6d5fd8
 src-git routing https://git.openwrt.org/feed/routing.git^c9b636698881059a3c981032770968f5a98ff201
 src-git telephony https://git.openwrt.org/feed/telephony.git^fd605af7143165a2490681ec1752f259873b9147
+src-git nss_packages https://github.com/qosmio/nss-packages.git^bb4d4c9a2520f48b366c16c22a6d90df1afdfd8a
+src-git sqm_scripts_nss https://github.com/qosmio/sqm-scripts-nss.git^4b4ed8639229be5e70cf94b73cdf7dbc09e66d5d
