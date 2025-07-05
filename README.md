@@ -20,35 +20,25 @@
 <a id="fn3"></a><sup>3</sup> ❌ Not available in NSS FW (11.4–12.5)  
 <a id="fn4"></a><sup>4</sup> ⚠️ Broken in ath11k driver  
 
-> **Note on IPQ50xx:**  
-> Although the IPQ50xx family has NSS offloading capabilities, its architecture is substantially different from IPQ807x/IPQ60xx and requires additional patching. Most of my NSS patches for IPQ50xx have been blind guesswork (I do not own any), and thus far unsuccessful. If anyone with one of these devices gets NSS working, feel free to open a PR.
-
 ---
 
-# NSS Branches
+# NSS Fork for Zyxel Armor G5
+| Branch                                                                                  | mac80211 Version | Notes                                                                 |
+|-----------------------------------------------------------------------------------------|------------------|----------------------------------------------------------------------|
+| [nbg7815-main-nss](https://github.com/asvio/nbg7815-nss/tree/nbg7815-main-nss)          |6.16.12|Current with upstream `main` (unstable)|
+| [nbg7815-25.12-nss](https://github.com/asvio/nbg7815-nss/tree/nbg7815-25.12-nss)        |6.16.12|Current with upstream `openwrt-25.12` (next stable release)|
 
-| Branch                                                              | Kernel | MAC80211 | Notes                                         |
-|---------------------------------------------------------------------|:------:|:--------:|-----------------------------------------------|
-| [main-nss](https://github.com/qosmio/openwrt-ipq/tree/main-nss)     | 6.12   |  6.12.6  | Current with upstream `main` (unstable)       |
-| [24.10-nss](https://github.com/qosmio/openwrt-ipq/tree/24.10-nss)   | 6.6    |  6.12.6  | Current with upstream `openwrt-24.10` (stable)|
 
 ## Table of Contents
-
-* [Overview](#overview)
-* [What's NSS?](#whats-nss)
-* [How Does OpenWrt "Offload" Traffic?](#how-does-openwrt-offload-traffic)
-* [Why Isn't NSS Supported in Vanilla OpenWrt?](#why-isnt-nss-supported-in-vanilla-openwrt)
-* [How Is NSS Different from OpenWrt's Offloading Options?](#how-is-nss-different-from-openwrts-offloading-options)
-
-  * [Key Differences](#key-differences)
-* [Do I Need NSS?](#do-i-need-nss)
-* [OK, I Want NSS. Does My Device Support It?](#ok-i-want-nss-does-my-device-support-it)
-* [Quickstart](#quickstart)
-* [IMPORTANT NOTE!!](#important-note)
-
-  * [1. Packet Steering / Flow Offloading](#1-packet-steering--flow-offloading)
-  * [2. Bridge VLAN Filtering (DSA Syntax)](#2-bridge-vlan-filtering-dsa-syntax)
-* [Donate](#support-the-project)
+- [Overview](#overview)
+- [What's NSS?](#whats-nss)
+- [How Does OpenWrt "Offload" Traffic?](#how-does-openwrt-offload-traffic)
+- [How Is NSS Different from OpenWrt's Offloading Options?](#how-is-nss-different-from-openwrts-offloading-options)
+- [Do I Need NSS?](#do-i-need-nss)
+- [OK, I Want NSS. Does My Device Support It?](#ok-i-want-nss-does-my-device-support-it)
+- [Quickstart](#quickstart)
+- [Important Note](#important-note)
+- [Donate](#Support-the-NSS-support-Project)
 
 ---
 
@@ -124,8 +114,8 @@ Supported devices include, but are not limited to:
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/qosmio/openwrt-ipq -b main-nss
-   cd openwrt-ipq
+   git clone -b nbg7815-main-nss https://github.com/asvio/nbg7815-nss.git nbg7815-nss
+   cd nbg7815-nss
    ```
 2. Update feeds:
    ```bash
@@ -134,20 +124,13 @@ Supported devices include, but are not limited to:
    ```
 3. Copy over the seed file
    ```bash
-   cp nss-setup/config-nss.seed .config
+   cp nbg7815-config .config
    ```
-4. Open the `.config` in a text editor, find your device, and remove the "#" and change `"is not set"` to `"=y"`
-
-   Example:
-   ```diff
-   -# CONFIG_TARGET_qualcommax_ipq807x_DEVICE_dynalink_dl-wrx36 is not set
-   +CONFIG_TARGET_qualcommax_ipq807x_DEVICE_dynalink_dl-wrx36=y
-   ```
-6. Generate the full config
+4. Generate the full config
    ```bash
    make defconfig V=s
    ```
-7. Now run full build
+5. Now run full build
    ```bash
    make download -j$(nproc) V=s
    make -j$(nproc) V=s
@@ -248,9 +231,13 @@ If you have questions or issues, please join the discussion on OpenWrt's forums.
 
    5. Be respectful and mindful. I dedicate my free time to maintain and improve this project, and I do it for the benefit of the community. Remember that I'm not a full-time developer or support team—I'm just an individual sharing my work. Constructive feedback is always welcome, but please refrain from being overly critical or demanding.
 
-## Support the Project
+## Support the NSS support Project
 
-I never really thought about setting up donations before, but with so many people being receptive and appreciative and asking how to contribute, I figured, why not? Of course, this project also builds on the incredible work done by the talented devs upstream who put in countless hours into OpenWrt itself. I’ll definitely continue working on this, but if you’d like to support, every bit helps.
+Developer comment on NSS support:
+
+"I never really thought about setting up donations before, but with so many people being receptive and appreciative and asking how to contribute, I figured, why not? Of course, this project also builds on the incredible work done by the talented devs upstream who put in countless hours into OpenWrt itself. I’ll definitely continue working on this, but if you’d like to support, every bit helps."
+
+Donations will go to him
 
 [![Donate with PayPal](./paypal.png)](https://www.paypal.com/donate?business=3V3H2SZFY7DNQ&item_name=Maintaining+NSS+fork+of+OpenWRT+and+NSS+packages.)
 <a href="https://cash.app/$austinzk">
