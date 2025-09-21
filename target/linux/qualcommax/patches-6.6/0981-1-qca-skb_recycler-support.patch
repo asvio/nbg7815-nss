@@ -73,7 +73,7 @@
  
  int skb_append_pagefrags(struct sk_buff *skb, struct page *page,
  			 int offset, size_t size, size_t max_frags);
-@@ -3238,6 +3261,9 @@ static inline void *netdev_alloc_frag_al
+@@ -3261,6 +3284,9 @@ static inline void *netdev_alloc_frag_al
  struct sk_buff *__netdev_alloc_skb(struct net_device *dev, unsigned int length,
  				   gfp_t gfp_mask);
  
@@ -147,7 +147,7 @@
 +obj-$(CONFIG_SKB_RECYCLER) += skbuff_recycle.o
 --- a/net/core/dev.c
 +++ b/net/core/dev.c
-@@ -6084,10 +6084,16 @@ static int process_backlog(struct napi_s
+@@ -6096,10 +6096,16 @@ static int process_backlog(struct napi_s
  
  	napi->weight = READ_ONCE(dev_rx_weight);
  	while (again) {
